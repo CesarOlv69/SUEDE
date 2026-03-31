@@ -262,10 +262,110 @@ function updateSyncBadge() {
   }
 }
 
+
+// ══════════════════════════════════
+// EDIT EXISTING STEPS
+// ══════════════════════════════════
+let editingStepId = null;
+
+function openEditStep(id) {
+  const step = customSteps.find(s => s.id === id);
+  if (!step) return;
+  editingStepId = id;
+  
+  // Fill form with existing data
+  document.getElementById('new-name').value = step.name || '';
+  document.getElementById('new-address').value = step.address || '';
+  document.getElementById('new-type').value = step.type || 'restaurant';
+  document.getElementById('new-day').value = step.day || 'day1';
+  document.getElementById('new-time').value = step.time || '';
+  document.getElementById('new-note').value = step.note || '';
+  
+  if (step.photo) {
+    document.getElementById('photo-preview').style.backgroundImage = 'url(' + step.photo + ')';
+    selectedPhotoBase64 = step.photo;
+  }
+  
+  // Update modal title and button
+  document.querySelector('#edit-modal > div:first-child > div:first-child').textContent = 'Modifier l\'étape';
+  document.getElementById('submit-btn').textContent = 'Enregistrer les modifications';
+  
+  openEditModal();
+}
+
+// Override closeEditModal to reset edit state
+const _origCloseModal = closeEditModal;
+closeEditModal = function() {
+  editingStepId = null;
+  const titleEl = document.querySelector('#edit-modal > div:first-child > div:first-child');
+  if (titleEl) titleEl.textContent = 'Ajouter une étape';
+  const btn = document.getElementById('submit-btn');
+  if (btn) btn.textContent = 'Ajouter à l\'itinéraire';
+  _origCloseModal();
+};
+
+// Override submitNewStep to handle edits
+const _origSubmit = submitNewStep;
+submitNewStep = async function() {
+  if (!editingStepId) {
+    _origSubmit();
+    return;
+  }
+  
+  // UPDATE existing step
+  const name = document.getElementById('new-name').value.trim();
+  if (!name) { alert('Ajoute un nom'); return; }
+  
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('submit-status');
+  btn.disabled = true;
+  btn.textContent = 'Enregistrement…';
+  
+  const updatedStep = {
+    id: editingStepId,
+    name,
+    address: document.getElementById('new-address').value.trim(),
+    type: document.getElementById('new-type').value,
+    day: document.getElementById('new-day').value,
+    time: document.getElementById('new-time').value,
+    note: document.getElementById('new-note').value.trim(),
+    photo: selectedPhotoBase64 || customSteps.find(s => s.id === editingStepId)?.photo || null,
+    created_at: customSteps.find(s => s.id === editingStepId)?.created_at || new Date().toISOString()
+  };
+  
+  // Update in Supabase
+  await sbFetch(SB_TABLE + '?id=eq.' + editingStepId, 'DELETE');
+  await sbFetch(SB_TABLE, 'POST', updatedStep);
+  
+  // Update locally
+  const idx = customSteps.findIndex(s => s.id === editingStepId);
+  if (idx > -1) customSteps[idx] = updatedStep;
+  localStorage.setItem('custom_steps_cache', JSON.stringify(customSteps));
+  
+  renderAllCustomSteps();
+  
+  status.style.display = 'block';
+  status.textContent = '✓ Modifié et synchronisé avec Lucie';
+  
+  btn.disabled = false;
+  btn.textContent = 'Enregistrer les modifications';
+  
+  setTimeout(() => {
+    closeEditModal();
+    showDay(updatedStep.day);
+  }, 1000);
+};
+
+// Update renderCustomCard to include edit button
 function renderCustomCard(step) {
   const mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent((step.address || step.name) + ' Stockholm');
-  const typeLabels = { restaurant:'🍽 Restaurant', brunch:'☕ Brunch', visit:'🏛 Visite', walk:'🚶 Balade', wellness:'🧖 Wellness', shopping:'🛍 Shopping', bar:'🍸 Bar', other:'✦ Autre' };
+  const typeLabels = { 
+    restaurant:'🍽 Restaurant', brunch:'☕ Brunch', visit:'🏛 Visite', 
+    walk:'🚶 Balade', wellness:'🧖 Wellness', shopping:'🛍 Shopping', 
+    bar:'🍸 Bar', other:'✦ Autre' 
+  };
   const photoStyle = step.photo ? 'background-image:url(' + step.photo + ')' : 'background:var(--surface2)';
+  
   return '<div class="custom-card">' +
     '<div class="custom-card-photo" style="' + photoStyle + '"></div>' +
     '<div class="custom-card-body">' +
@@ -275,14 +375,18 @@ function renderCustomCard(step) {
         (step.note ? '<div style="font-size:12px;color:var(--text-muted);font-weight:300;margin-top:2px;">' + step.note + '</div>' : '') +
       '</div>' +
       '<div style="display:flex;gap:6px;flex-shrink:0;margin-left:10px;">' +
-        '<a href="' + mapsUrl + '" target="_blank" class="icon-btn">' +
+        '<a href="' + mapsUrl + '" target="_blank" class="icon-btn" title="Maps">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
         '</a>' +
-        '<button class="custom-card-delete" onclick="deleteStep(\'' + step.id + '\')">✕</button>' +
+        '<button class="icon-btn" onclick="openEditStep(\'' + step.id + '\')" title="Modifier" style="color:var(--accent-dark);">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+        '</button>' +
+        '<button class="custom-card-delete" onclick="deleteStep(\'' + step.id + '\')" title="Supprimer">✕</button>' +
       '</div>' +
     '</div>' +
   '</div>';
 }
+
 
 async function deleteStep(id) {
   if (!confirm('Supprimer cette étape ?')) return;
