@@ -1,3 +1,9 @@
+// Kill any old service workers and caches immediately
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+  caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+}
+
 // ══════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════
@@ -426,6 +432,4 @@ document.addEventListener('DOMContentLoaded', () => {
   if (countEl) countEl.textContent = favorites.length + ' lieu' + (favorites.length !== 1 ? 'x' : '');
 });
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
+// SW disabled
