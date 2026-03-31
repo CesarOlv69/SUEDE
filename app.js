@@ -278,7 +278,7 @@ function renderCustomCard(step) {
         '<a href="' + mapsUrl + '" target="_blank" class="icon-btn">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
         '</a>' +
-        '<button class="custom-card-delete" onclick="deleteStep('' + step.id + '')">✕</button>' +
+        '<button class="custom-card-delete" onclick="deleteStep(\'' + step.id + '\')">✕</button>' +
       '</div>' +
     '</div>' +
   '</div>';
@@ -390,7 +390,7 @@ async function submitNewStep() {
   status.textContent = result ? '✓ Synchronisé avec Lucie !' : '✓ Ajouté en local';
 
   btn.disabled = false;
-  btn.textContent = 'Ajouter à l'itinéraire';
+  btn.textContent = "Ajouter à l'itinéraire";
 
   setTimeout(() => {
     closeEditModal();
