@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="220" fill="#1D1D1B"/>
+  
+  <!-- Outer ring -->
+  <circle cx="512" cy="512" r="340" fill="none" stroke="#C6B59A" stroke-width="1.5" opacity="0.5"/>
+  
+  <!-- Subtle texture ring -->
+  <circle cx="512" cy="512" r="290" fill="none" stroke="#8C9A8B" stroke-width="0.8" opacity="0.3"/>
+  
+  <!-- Nordic compass star - 4 large points -->
+  <!-- North -->
+  <path d="M512 172 L532 492 L512 512 L492 492 Z" fill="#F6F2EC" opacity="0.95"/>
+  <!-- South -->
+  <path d="M512 852 L532 532 L512 512 L492 532 Z" fill="#F6F2EC" opacity="0.95"/>
+  <!-- East -->
+  <path d="M852 512 L532 532 L512 512 L532 492 Z" fill="#C6B59A" opacity="0.9"/>
+  <!-- West -->
+  <path d="M172 512 L492 492 L512 512 L492 532 Z" fill="#C6B59A" opacity="0.9"/>
+  
+  <!-- 4 minor points (diagonal) -->
+  <!-- NE -->
+  <path d="M738 286 L532 492 L512 512 L532 492 L738 286Z" fill="#8C9A8B" opacity="0.7"/>
+  <!-- NW -->
+  <path d="M286 286 L492 492 L512 512 L492 492 L286 286Z" fill="#8C9A8B" opacity="0.7"/>
+  <!-- SE -->
+  <path d="M738 738 L532 532 L512 512 L532 532 L738 738Z" fill="#8C9A8B" opacity="0.6"/>
+  <!-- SW -->
+  <path d="M286 738 L492 532 L512 512 L492 532 L286 738Z" fill="#8C9A8B" opacity="0.6"/>
+  
+  <!-- Center disc -->
+  <circle cx="512" cy="512" r="36" fill="#1D1D1B"/>
+  <circle cx="512" cy="512" r="24" fill="#C6B59A" opacity="0.9"/>
+  <circle cx="512" cy="512" r="10" fill="#1D1D1B"/>
+</svg>
