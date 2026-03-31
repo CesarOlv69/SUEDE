@@ -148,8 +148,8 @@ body {
   position: absolute;
   inset: 0;
   background: 
-    linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 30%, rgba(20,18,14,0.65) 70%, rgba(20,18,14,0.88) 100%),
-    url('photo-stockholm.png') center/cover no-repeat;
+    linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 25%, rgba(20,18,14,0.55) 65%, rgba(20,18,14,0.85) 100%),
+    url('photo-cesar-lucie.jpg') center 60%/cover no-repeat;
 }
 
 .hero-content {
@@ -1157,6 +1157,261 @@ body {
 .mt-4 { margin-top: 16px; }
 .px-4 { padding: 0 16px; }
 
+
+/* ── EDIT SYSTEM ── */
+#edit-fab {
+  position: fixed;
+  bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
+  right: 16px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 90;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#edit-fab:active { transform: scale(0.92); }
+
+#edit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+  background: var(--bg);
+}
+#edit-modal.open { display: flex; }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 16px) 20px 16px;
+  border-bottom: 1px solid rgba(199,180,160,0.2);
+  background: var(--surface);
+}
+
+.modal-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.modal-close {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(199,180,160,0.3);
+  background: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(199,180,160,0.3);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  -webkit-appearance: none;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--accent);
+}
+
+.form-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(199,180,160,0.3);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  -webkit-appearance: none;
+  outline: none;
+}
+
+.photo-upload-area {
+  width: 100%;
+  height: 140px;
+  border: 2px dashed rgba(199,180,160,0.4);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-upload-area:active { border-color: var(--accent); }
+
+.photo-upload-preview {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius-sm);
+}
+
+.photo-upload-label {
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: center;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+.submit-btn:active { transform: scale(0.98); opacity: 0.9; }
+.submit-btn:disabled { opacity: 0.5; }
+
+/* Custom additions section on day pages */
+.custom-additions {
+  padding: 0 20px 16px;
+}
+
+.custom-card {
+  background: var(--surface);
+  border: 1px solid rgba(199,180,160,0.2);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.custom-card-photo {
+  width: 100%;
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--secondary);
+}
+
+.custom-card-body {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.custom-card-info { flex: 1; }
+
+.custom-card-name {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.custom-card-type {
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.custom-card-delete {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(199,180,160,0.3);
+  background: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+/* Supabase sync indicator */
+.sync-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  margin-left: 6px;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.sync-banner {
+  text-align: center;
+  padding: 8px;
+  font-size: 11px;
+  color: var(--text-light);
+  letter-spacing: 0.06em;
+}
+
+/* Setup screen */
+#setup-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 400;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  text-align: center;
+  gap: 16px;
+}
+#setup-screen.open { display: flex; }
+
 </style>
 </head>
 <body>
@@ -1200,13 +1455,13 @@ body {
 
     <!-- Weather Card -->
     <div id="weather-home">
-      <div class="weather-card" style="flex-direction:column;gap:14px;">
+      <div class="weather-card" style="flex-direction:column;gap:14px;cursor:pointer;" onclick="openWeather()">
         <div style="display:flex;align-items:center;gap:14px;">
           <div id="w-icon" class="weather-icon">☁️</div>
           <div class="weather-info">
             <div id="w-temp" class="weather-temp">—°</div>
             <div id="w-desc" class="weather-desc">Loading forecast…</div>
-            <div class="weather-location">Stockholm, Sweden</div>
+            <div class="weather-location">Stockholm, Sweden · <span style="opacity:0.7">tap for forecast</span></div>
           </div>
         </div>
         <div id="w-forecast" class="weather-forecast"></div>
@@ -1338,6 +1593,7 @@ body {
     </div>
 
     <div style="height: 8px;"></div>
+    <div id="sync-status" class="sync-banner" style="display:none;"></div>
 
   </div><!-- /home -->
 
@@ -1402,6 +1658,12 @@ body {
         </div>
       </div>
 
+    </div>
+
+    <!-- Custom user additions for arrival -->
+    <div id="custom-arrival" class="custom-additions" style="display:none;">
+      <div style="font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;padding-top:4px;">Vos ajouts</div>
+      <div id="custom-arrival-list"></div>
     </div>
   </div><!-- /arrival -->
 
@@ -1534,7 +1796,7 @@ body {
               </div>
             </a>
             <a class="stop-item-photo" href="https://maps.google.com/?q=Fjallgatan+Stockholm" target="_blank">
-              <div class="stop-photo" style="background-image:url('photo-sodermalm.png');">
+              <div class="stop-photo" style="background-image:url('photo-stockholm.png');background-position:center top;">
                 <div class="stop-photo-name">Fjällgatan</div>
               </div>
               <div class="stop-footer">
@@ -1546,7 +1808,7 @@ body {
               </div>
             </a>
             <a class="stop-item-photo" href="https://maps.google.com/?q=Monteliusvagen+Stockholm" target="_blank">
-              <div class="stop-photo" style="background-image:url('photo-sodermalm.png');">
+              <div class="stop-photo" style="background-image:url('photo-gamla-stan.png');background-position:center center;">
                 <div class="stop-photo-name">Monteliusvägen</div>
               </div>
               <div class="stop-footer">
@@ -1662,6 +1924,12 @@ body {
         </div>
       </div>
 
+    </div>
+
+    <!-- Custom user additions for day1 -->
+    <div id="custom-day1" class="custom-additions" style="display:none;">
+      <div style="font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;padding-top:4px;">Vos ajouts</div>
+      <div id="custom-day1-list"></div>
     </div>
   </div><!-- /day1 -->
 
@@ -1863,6 +2131,12 @@ body {
       </div>
 
     </div>
+
+    <!-- Custom user additions for day2 -->
+    <div id="custom-day2" class="custom-additions" style="display:none;">
+      <div style="font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;padding-top:4px;">Vos ajouts</div>
+      <div id="custom-day2-list"></div>
+    </div>
   </div><!-- /day2 -->
 
 
@@ -1943,7 +2217,7 @@ body {
               </div>
             </a>
             <a class="stop-item-photo" href="https://maps.google.com/?q=Stortorget+Stockholm" target="_blank">
-              <div class="stop-photo" style="background-image:url('photo-gamla-stan.png');">
+              <div class="stop-photo" style="background-image:url('https://images.unsplash.com/photo-1548625149-720754c63a88?w=600&q=85&auto=format&fit=crop');background-position:center;">
                 <div class="stop-photo-name">Stortorget</div>
               </div>
               <div class="stop-footer">
@@ -1955,7 +2229,7 @@ body {
               </div>
             </a>
             <a class="stop-item-photo" href="https://maps.google.com/?q=Stockholm+Palace" target="_blank">
-              <div class="stop-photo" style="background-image:url('photo-gamla-stan.png');">
+              <div class="stop-photo" style="background-image:url('https://images.unsplash.com/photo-1595872836774-90d27f5b27a5?w=600&q=85&auto=format&fit=crop');background-position:center;">
                 <div class="stop-photo-name">Royal Palace</div>
               </div>
               <div class="stop-footer">
@@ -2091,6 +2365,12 @@ body {
         </div>
       </div>
 
+    </div>
+
+    <!-- Custom user additions for day3 -->
+    <div id="custom-day3" class="custom-additions" style="display:none;">
+      <div style="font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;padding-top:4px;">Vos ajouts</div>
+      <div id="custom-day3-list"></div>
     </div>
   </div><!-- /day3 -->
 
@@ -2257,6 +2537,12 @@ body {
       </div>
 
     </div>
+
+    <!-- Custom user additions for day4 -->
+    <div id="custom-day4" class="custom-additions" style="display:none;">
+      <div style="font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;padding-top:4px;">Vos ajouts</div>
+      <div id="custom-day4-list"></div>
+    </div>
   </div><!-- /day4 -->
 
 
@@ -2264,6 +2550,16 @@ body {
        FAVORITES PAGE
   ══════════════════════════════════ -->
   <div id="page-favorites" class="page page-top">
+    <div style="display:flex;align-items:center;gap:10px;padding:calc(var(--safe-top) + 16px) 24px 0;">
+  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="18" cy="18" r="17" stroke="#C6B59A" stroke-width="0.8" opacity="0.6"/>
+    <text x="18" y="23" font-family="Cormorant Garamond, Georgia, serif" font-size="13" font-weight="400" fill="#1D1D1B" text-anchor="middle" letter-spacing="0.5">C·L</text>
+  </svg>
+  <div>
+    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;font-weight:400;color:var(--text);letter-spacing:0.02em;">Cesar &amp; Lucie</div>
+    <div style="font-size:9px;color:var(--text-light);letter-spacing:0.15em;text-transform:uppercase;font-weight:400;">Stockholm · April 2026</div>
+  </div>
+</div>
     <div class="section-header">
       <h2 class="section-title">Saved</h2>
       <span class="section-subtitle" id="fav-count">0 places</span>
@@ -2277,46 +2573,18 @@ body {
     </div>
   </div>
 
-</div><!-- /app -->
 
-
-<!-- ══════════════════════════════════
-     BOTTOM NAV
-══════════════════════════════════ -->
-<nav id="nav">
-  <div class="nav-items">
-
-    <button class="nav-btn active" id="nav-home" onclick="navigate('home')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9,22 9,12 15,12 15,22"/>
-      </svg>
-      <span class="nav-label">Home</span>
-    </button>
-
-    <button class="nav-btn" id="nav-days" onclick="navigate('days')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-      <span class="nav-label">Days</span>
-    </button>
-
-    <button class="nav-btn" id="nav-favorites" onclick="navigate('favorites')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-      <span class="nav-label">Saved</span>
-    </button>
-
+<div id="page-days" class="page" style="display:none;">
+  <div style="display:flex;align-items:center;gap:10px;padding:calc(var(--safe-top) + 16px) 24px 0;">
+  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="18" cy="18" r="17" stroke="#C6B59A" stroke-width="0.8" opacity="0.6"/>
+    <text x="18" y="23" font-family="Cormorant Garamond, Georgia, serif" font-size="13" font-weight="400" fill="#1D1D1B" text-anchor="middle" letter-spacing="0.5">C·L</text>
+  </svg>
+  <div>
+    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;font-weight:400;color:var(--text);letter-spacing:0.02em;">Cesar &amp; Lucie</div>
+    <div style="font-size:9px;color:var(--text-light);letter-spacing:0.15em;text-transform:uppercase;font-weight:400;">Stockholm · April 2026</div>
   </div>
-</nav>
-
-
-<!-- Days overview panel (shown when Days tab tapped) -->
-<div id="page-days" class="page" style="display:none;padding-top:calc(var(--safe-top) + 8px);">
+</div>
   <div class="section-header">
     <h2 class="section-title">Your itinerary</h2>
   </div>
@@ -2375,6 +2643,46 @@ body {
 
   </div>
 </div>
+
+</div><!-- /app -->
+
+
+<!-- ══════════════════════════════════
+     BOTTOM NAV
+══════════════════════════════════ -->
+<nav id="nav">
+  <div class="nav-items">
+
+    <button class="nav-btn active" id="nav-home" onclick="navigate('home')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
+      <span class="nav-label">Home</span>
+    </button>
+
+    <button class="nav-btn" id="nav-days" onclick="navigate('days')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <span class="nav-label">Days</span>
+    </button>
+
+    <button class="nav-btn" id="nav-favorites" onclick="navigate('favorites')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span class="nav-label">Saved</span>
+    </button>
+
+  </div>
+</nav>
+
+
+<!-- Days overview panel (shown when Days tab tapped) -->
 
 
 <script>
@@ -2595,6 +2903,16 @@ function restoreFavStates() {
   });
 }
 
+// ── WEATHER LINK ──
+function openWeather() {
+  // Try native iOS weather app deeplink first, fallback to web
+  const lat = 59.3293, lon = 18.0686;
+  window.location.href = 'weather://';
+  setTimeout(() => {
+    window.open(\`https://weather.com/weather/today/l/\${lat},\${lon}\`, '_blank');
+  }, 500);
+}
+
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   showPage('home');
@@ -2608,7 +2926,421 @@ document.addEventListener('DOMContentLoaded', () => {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
+
+
+// ══════════════════════════════════
+// SUPABASE COLLABORATIVE SYSTEM
+// ══════════════════════════════════
+
+const SUPABASE_TABLE = 'stockholm_steps';
+let supabaseUrl = localStorage.getItem('sb_url') || '';
+let supabaseKey = localStorage.getItem('sb_key') || '';
+let selectedPhotoBase64 = null;
+let customSteps = [];
+let realtimeChannel = null;
+
+// ── SUPABASE CONFIG ──
+function isSupabaseConfigured() {
+  return supabaseUrl && supabaseKey && supabaseUrl.includes('supabase.co');
+}
+
+function saveSupabaseConfig() {
+  const url = document.getElementById('setup-url').value.trim();
+  const key = document.getElementById('setup-key').value.trim();
+  if (!url || !key) return alert('Remplis les deux champs');
+  localStorage.setItem('sb_url', url);
+  localStorage.setItem('sb_key', key);
+  supabaseUrl = url;
+  supabaseKey = key;
+  document.getElementById('setup-screen').classList.remove('open');
+  initSupabase();
+}
+
+function useLocalOnly() {
+  localStorage.setItem('sb_url', 'local');
+  supabaseUrl = 'local';
+  document.getElementById('setup-screen').classList.remove('open');
+  loadCustomSteps();
+}
+
+// ── SUPABASE API CALLS ──
+async function sbFetch(path, method='GET', body=null) {
+  if (!isSupabaseConfigured()) return null;
+  const opts = {
+    method,
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': 'Bearer ' + supabaseKey,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(supabaseUrl + '/rest/v1/' + path, opts);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+// ── LOAD CUSTOM STEPS ──
+async function loadCustomSteps() {
+  let steps = [];
+  
+  if (isSupabaseConfigured() && supabaseUrl !== 'local') {
+    const data = await sbFetch(SUPABASE_TABLE + '?order=created_at.asc');
+    if (data) {
+      steps = data;
+      // Also save locally as cache
+      localStorage.setItem('custom_steps_cache', JSON.stringify(steps));
+    }
+  }
+  
+  // Fallback to local
+  if (steps.length === 0) {
+    steps = JSON.parse(localStorage.getItem('custom_steps_cache') || '[]');
+  }
+  
+  customSteps = steps;
+  renderAllCustomSteps();
+  updateSyncStatus(steps.length);
+}
+
+function updateSyncStatus(count) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  if (count > 0) {
+    el.style.display = 'block';
+    el.innerHTML = isSupabaseConfigured() && supabaseUrl !== 'local' 
+      ? '<span class="sync-dot"></span> ' + count + ' ajout' + (count>1?'s':'') + ' synchronisé' + (count>1?'s':'') + ' avec Lucie'
+      : count + ' ajout' + (count>1?'s':'') + ' en local';
+  }
+}
+
+function renderAllCustomSteps() {
+  // Show custom sections on day pages if they have content
+  ['arrival','day1','day2','day3','day4'].forEach(day => {
+    const daySteps = customSteps.filter(s => s.day === day);
+    const container = document.getElementById('custom-' + day);
+    const list = document.getElementById('custom-' + day + '-list');
+    if (!container || !list) return;
+    
+    if (daySteps.length > 0) {
+      container.style.display = 'block';
+      list.innerHTML = daySteps.map(s => renderCustomCard(s)).join('');
+    } else {
+      container.style.display = 'none';
+    }
+  });
+}
+
+function renderCustomCard(step) {
+  const mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(step.address || step.name + ' Stockholm');
+  const typeLabels = {
+    restaurant:'🍽 Restaurant', brunch:'☕ Brunch', visit:'🏛 Visite',
+    walk:'🚶 Balade', wellness:'🧖 Wellness', shopping:'🛍 Shopping',
+    bar:'🍸 Bar', other:'✦ Autre'
+  };
+  const photoStyle = step.photo 
+    ? 'background-image:url(' + step.photo + ');' 
+    : 'background:var(--surface2);';
+  const timeStr = step.time ? '<span style="font-size:11px;color:var(--text-light);margin-left:8px;">' + step.time + '</span>' : '';
+  
+  return '<div class="custom-card">' +
+    '<div class="custom-card-photo" style="' + photoStyle + '"></div>' +
+    '<div class="custom-card-body">' +
+      '<div class="custom-card-info">' +
+        '<div class="custom-card-type">' + (typeLabels[step.type] || step.type) + timeStr + '</div>' +
+        '<div class="custom-card-name">' + step.name + '</div>' +
+        (step.note ? '<div style="font-size:12px;color:var(--text-muted);font-weight:300;margin-top:2px;">' + step.note + '</div>' : '') +
+      '</div>' +
+      '<div style="display:flex;gap:6px;flex-shrink:0;margin-left:10px;">' +
+        '<a href="' + mapsUrl + '" target="_blank" class="icon-btn" title="Maps">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+        '</a>' +
+        '<button class="custom-card-delete" onclick="deleteStep('' + step.id + '')" title="Supprimer">✕</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+// ── DELETE STEP ──
+async function deleteStep(id) {
+  if (!confirm('Supprimer cette étape ?')) return;
+  
+  if (isSupabaseConfigured() && supabaseUrl !== 'local') {
+    await sbFetch(SUPABASE_TABLE + '?id=eq.' + id, 'DELETE');
+  }
+  
+  customSteps = customSteps.filter(s => s.id !== id);
+  localStorage.setItem('custom_steps_cache', JSON.stringify(customSteps));
+  renderAllCustomSteps();
+  updateSyncStatus(customSteps.length);
+}
+
+// ── EDIT MODAL ──
+function openEditModal() {
+  if (!isSupabaseConfigured() && supabaseUrl !== 'local') {
+    document.getElementById('setup-screen').classList.add('open');
+    return;
+  }
+  document.getElementById('edit-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  
+  // Pre-select day based on current page
+  const daySelect = document.getElementById('new-day');
+  if (['arrival','day1','day2','day3','day4'].includes(currentPage)) {
+    daySelect.value = currentPage;
+  }
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  // Reset form
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-address').value = '';
+  document.getElementById('new-note').value = '';
+  document.getElementById('new-time').value = '';
+  document.getElementById('photo-preview').style.backgroundImage = '';
+  document.getElementById('maps-preview').style.display = 'none';
+  document.getElementById('submit-status').style.display = 'none';
+  selectedPhotoBase64 = null;
+}
+
+// ── PHOTO HANDLING ──
+function handlePhotoSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    // Compress image before storing
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = h * MAX / w; w = MAX; }
+      if (h > MAX) { w = w * MAX / h; h = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      selectedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
+      document.getElementById('photo-preview').style.backgroundImage = 'url(' + selectedPhotoBase64 + ')';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── ADDRESS → MAPS AUTO LINK ──
+document.addEventListener('DOMContentLoaded', () => {
+  const addressInput = document.getElementById('new-address');
+  if (addressInput) {
+    addressInput.addEventListener('input', () => {
+      const val = addressInput.value.trim();
+      const preview = document.getElementById('maps-preview');
+      const link = document.getElementById('maps-preview-link');
+      if (val.length > 3) {
+        const mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(val);
+        link.href = mapsUrl;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+  }
+});
+
+// ── SUBMIT NEW STEP ──
+async function submitNewStep() {
+  const name = document.getElementById('new-name').value.trim();
+  const address = document.getElementById('new-address').value.trim();
+  const type = document.getElementById('new-type').value;
+  const day = document.getElementById('new-day').value;
+  const time = document.getElementById('new-time').value;
+  const note = document.getElementById('new-note').value.trim();
+  
+  if (!name) { alert('Ajoute un nom'); return; }
+  
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('submit-status');
+  btn.disabled = true;
+  btn.textContent = 'Ajout en cours…';
+  
+  const step = {
+    id: Date.now().toString(),
+    name, address, type, day, time, note,
+    photo: selectedPhotoBase64 || null,
+    created_at: new Date().toISOString()
+  };
+  
+  let saved = false;
+  
+  // Try Supabase first
+  if (isSupabaseConfigured() && supabaseUrl !== 'local') {
+    const result = await sbFetch(SUPABASE_TABLE, 'POST', step);
+    if (result) {
+      saved = true;
+      status.style.display = 'block';
+      status.innerHTML = '✓ Synchronisé avec Lucie';
+    }
+  }
+  
+  // Always save locally too
+  customSteps.push(step);
+  localStorage.setItem('custom_steps_cache', JSON.stringify(customSteps));
+  renderAllCustomSteps();
+  updateSyncStatus(customSteps.length);
+  
+  if (!saved) {
+    status.style.display = 'block';
+    status.innerHTML = isSupabaseConfigured() ? '⚠ Sauvegardé en local (hors ligne)' : '✓ Ajouté en local';
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Ajouter à l\'itinéraire';
+  
+  setTimeout(() => {
+    closeEditModal();
+    // Navigate to the day page
+    showDay(day);
+  }, 1200);
+}
+
+// ── INIT SUPABASE ──
+async function initSupabase() {
+  if (!isSupabaseConfigured()) {
+    if (!supabaseUrl) {
+      // Show setup on first launch (delayed)
+      setTimeout(() => {
+        if (!localStorage.getItem('sb_dismissed')) {
+          document.getElementById('setup-screen').classList.add('open');
+        }
+      }, 4000);
+    }
+    return;
+  }
+  
+  loadCustomSteps();
+  
+  // Poll for updates every 30s (simple alternative to websockets)
+  setInterval(loadCustomSteps, 30000);
+}
+
+
+// Call initSupabase on load
+initSupabase();
 </script>
+
+
+<!-- ══════════════════════════════════
+     FLOATING ADD BUTTON
+══════════════════════════════════ -->
+<button id="edit-fab" onclick="openEditModal()" title="Ajouter une étape">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- ══════════════════════════════════
+     EDIT / ADD MODAL
+══════════════════════════════════ -->
+<div id="edit-modal">
+  <div class="modal-header">
+    <div class="modal-title">Ajouter une étape</div>
+    <button class="modal-close" onclick="closeEditModal()">✕</button>
+  </div>
+  <div class="modal-body">
+
+    <div class="form-group">
+      <label class="form-label">Nom du lieu ou restaurant</label>
+      <input class="form-input" id="new-name" type="text" placeholder="ex. Café Pascal, Djurgården…" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Adresse (pour Google Maps)</label>
+      <input class="form-input" id="new-address" type="text" placeholder="ex. Rörstrandsgatan 19, Stockholm" autocomplete="off">
+      <div id="maps-preview" style="margin-top:8px;display:none;">
+        <a id="maps-preview-link" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent-dark);font-weight:500;text-decoration:none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Voir sur Google Maps
+        </a>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-select" id="new-type">
+        <option value="restaurant">🍽 Restaurant</option>
+        <option value="brunch">☕ Brunch / Café</option>
+        <option value="visit">🏛 Visite / Lieu</option>
+        <option value="walk">🚶 Balade</option>
+        <option value="wellness">🧖 Wellness / Spa</option>
+        <option value="shopping">🛍 Shopping</option>
+        <option value="bar">🍸 Bar</option>
+        <option value="other">✦ Autre</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Jour</label>
+      <select class="form-select" id="new-day">
+        <option value="arrival">Arrivée — Vendredi 3 avril</option>
+        <option value="day1">Jour 1 — Samedi 4 avril</option>
+        <option value="day2">Jour 2 — Dimanche 5 avril</option>
+        <option value="day3">Jour 3 — Lundi 6 avril</option>
+        <option value="day4">Jour 4 — Mardi 7 avril</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Heure (optionnel)</label>
+      <input class="form-input" id="new-time" type="time" placeholder="20:30">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Note personnelle (optionnel)</label>
+      <input class="form-input" id="new-note" type="text" placeholder="ex. Réservation confirmée, essayer le menu…">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Photo</label>
+      <div class="photo-upload-area" onclick="document.getElementById('photo-input').click()">
+        <div class="photo-upload-preview" id="photo-preview"></div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+        <div class="photo-upload-label">Appuyer pour choisir une photo<br><span style="font-size:10px;opacity:0.6">depuis ton iPhone</span></div>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhotoSelect(this)">
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitNewStep()">
+      Ajouter à l'itinéraire
+    </button>
+
+    <div id="submit-status" style="text-align:center;font-size:12px;color:var(--text-muted);padding:12px;display:none;"></div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SUPABASE SETUP SCREEN
+══════════════════════════════════ -->
+<div id="setup-screen">
+  <div style="font-size:48px;margin-bottom:8px;">✦</div>
+  <div style="font-family:var(--serif);font-size:28px;font-weight:400;color:var(--text);">Configuration</div>
+  <div style="font-size:13px;color:var(--text-muted);line-height:1.6;max-width:280px;">
+    Pour partager vos ajouts avec Lucie, entrez votre clé Supabase. Ne faire qu'une seule fois.
+  </div>
+  <div style="width:100%;max-width:320px;margin-top:8px;">
+    <label class="form-label">Supabase URL</label>
+    <input class="form-input" id="setup-url" type="text" placeholder="https://xxxx.supabase.co" style="margin-bottom:12px;">
+    <label class="form-label">Supabase Anon Key</label>
+    <input class="form-input" id="setup-key" type="text" placeholder="eyJhbGci...">
+  </div>
+  <button class="submit-btn" style="max-width:320px;" onclick="saveSupabaseConfig()">Enregistrer</button>
+  <button style="background:none;border:none;color:var(--text-light);font-size:13px;cursor:pointer;margin-top:4px;" onclick="useLocalOnly()">
+    Utiliser en local seulement (pas de partage)
+  </button>
+</div>
 
 </body>
 </html>
