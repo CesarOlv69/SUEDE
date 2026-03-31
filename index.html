@@ -1410,7 +1410,7 @@ body {
   text-align: center;
   gap: 16px;
 }
-#setup-screen.open { display: flex; }
+#setup-screen.open { display: none; } /* credentials hardcoded */
 
 </style>
 </head>
@@ -2933,8 +2933,11 @@ if ('serviceWorker' in navigator) {
 // ══════════════════════════════════
 
 const SUPABASE_TABLE = 'stockholm_steps';
-let supabaseUrl = localStorage.getItem('sb_url') || '';
-let supabaseKey = localStorage.getItem('sb_key') || '';
+let supabaseUrl = 'https://tuarjmzjvnhmnpfkxcbo.supabase.co';
+let supabaseKey = 'sb_publishable_GVl8wU8THUveLkWRiKB4Rg_MhBT7J_3';
+// Save to local so isSupabaseConfigured() returns true
+localStorage.setItem('sb_url', supabaseUrl);
+localStorage.setItem('sb_key', supabaseKey);
 let selectedPhotoBase64 = null;
 let customSteps = [];
 let realtimeChannel = null;
@@ -3080,10 +3083,7 @@ async function deleteStep(id) {
 
 // ── EDIT MODAL ──
 function openEditModal() {
-  if (!isSupabaseConfigured() && supabaseUrl !== 'local') {
-    document.getElementById('setup-screen').classList.add('open');
-    return;
-  }
+  // Always configured — open modal directly
   document.getElementById('edit-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
   
@@ -3195,7 +3195,7 @@ async function submitNewStep() {
   
   if (!saved) {
     status.style.display = 'block';
-    status.innerHTML = isSupabaseConfigured() ? '⚠ Sauvegardé en local (hors ligne)' : '✓ Ajouté en local';
+    status.innerHTML = '⚠ Sauvegardé en local (hors ligne)';
   }
   
   btn.disabled = false;
@@ -3210,17 +3210,7 @@ async function submitNewStep() {
 
 // ── INIT SUPABASE ──
 async function initSupabase() {
-  if (!isSupabaseConfigured()) {
-    if (!supabaseUrl) {
-      // Show setup on first launch (delayed)
-      setTimeout(() => {
-        if (!localStorage.getItem('sb_dismissed')) {
-          document.getElementById('setup-screen').classList.add('open');
-        }
-      }, 4000);
-    }
-    return;
-  }
+  // Credentials are hardcoded — always configured
   
   loadCustomSteps();
   
