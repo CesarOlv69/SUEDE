@@ -105,7 +105,8 @@ body {
 }
 
 .nav-btn .nav-icon { 
-  width: 24px; height: 24px; 
+  width: 24px; height: 24px;
+  color: var(--text-light);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -120,6 +121,8 @@ body {
 
 .nav-btn.active .nav-icon { transform: scale(1.15); }
 .nav-btn.active .nav-label { color: var(--accent-dark); font-weight: 500; }
+.nav-btn .nav-icon { color: var(--text-light); }
+.nav-btn.active .nav-icon { color: var(--accent-dark); }
 
 /* ── PAGES ── */
 .page { display: none; animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -259,32 +262,33 @@ body {
 }
 
 .weather-forecast {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
+  width: 100%;
 }
 
 .weather-day {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: var(--bg);
-  border-radius: 12px;
-  padding: 8px 10px;
-  min-width: 48px;
+  border-radius: 10px;
+  padding: 6px 4px;
 }
 
 .weather-day-label {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-light);
   font-weight: 400;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
-.weather-day-icon { font-size: 18px; }
+.weather-day-icon { font-size: 16px; }
 
 .weather-day-temp {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text);
 }
@@ -1196,14 +1200,14 @@ body {
 
     <!-- Weather Card -->
     <div id="weather-home">
-      <div class="weather-card">
-        <div>
+      <div class="weather-card" style="flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:center;gap:14px;">
           <div id="w-icon" class="weather-icon">☁️</div>
-        </div>
-        <div class="weather-info">
-          <div id="w-temp" class="weather-temp">—°</div>
-          <div id="w-desc" class="weather-desc">Loading forecast…</div>
-          <div class="weather-location">Stockholm, Sweden</div>
+          <div class="weather-info">
+            <div id="w-temp" class="weather-temp">—°</div>
+            <div id="w-desc" class="weather-desc">Loading forecast…</div>
+            <div class="weather-location">Stockholm, Sweden</div>
+          </div>
         </div>
         <div id="w-forecast" class="weather-forecast"></div>
       </div>
@@ -1221,9 +1225,10 @@ body {
           <div style="font-family:var(--serif);font-size:26px;font-weight:400;color:white;line-height:1.1;">Villa Dahlia</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 10px 0;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 10px 0;">
         <div style="height:80px;border-radius:10px;overflow:hidden;background:url('photo-villa-dahlia.png') center/cover;"></div>
         <div style="height:80px;border-radius:10px;overflow:hidden;background:url('photo-spa.png') center/cover;"></div>
+        <div style="height:80px;border-radius:10px;overflow:hidden;background:url('https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=300&q=80&auto=format&fit=crop') center/cover;"></div>
       </div>
       <div style="padding:12px 16px 16px;display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Stockholm · April 3–7</div>
@@ -1608,6 +1613,51 @@ body {
                 </div>
               </div>
             </div>
+
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Solen</div>
+                    <div class="option-photo-cat">Nordic brasserie · rooftop views</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Nordic brasserie</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Solen','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Solen+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Copine</div>
+                    <div class="option-photo-cat">Cosy · natural wine · neighbourhood</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Cosy</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Copine','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Copine+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1763,6 +1813,51 @@ body {
                 </div>
               </div>
             </div>
+
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1544148103-0773bf10d330?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Lennart & Bror</div>
+                    <div class="option-photo-cat">Hip · creative · local crowd</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Hip</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Lennart & Bror','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Lennart+Bror+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Schmaltz</div>
+                    <div class="option-photo-cat">Jewish deli vibes · fun · convivial</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Jewish deli vibes</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Schmaltz','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Schmaltz+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1903,6 +1998,51 @@ body {
           <div class="event-type-tag">Dinner</div>
           <div class="event-title">Evening dinner</div>
           <div class="option-items">
+            <div class="option-item-photo" style="border:2px solid rgba(198,181,154,0.6);">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div style="font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.7);margin-bottom:3px;">✦ RÉSERVATION CONFIRMÉE · 20h45</div>
+                    <div class="option-photo-name">Gazza</div>
+                    <div class="option-photo-cat">Lundi 6 avril · dîner confirmé</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Cuisine créative · Stockholm</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Gazza','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Gazza+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Matbaren</div>
+                    <div class="option-photo-cat">Mathias Dahlgren · gastro bar · legendary</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Gastronomique</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Matbaren','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Matbaren+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
             <div class="option-item-photo">
               <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80&auto=format&fit=crop');">
                 <div class="option-photo-overlay"></div>
@@ -2022,7 +2162,97 @@ body {
           <div class="event-type-tag">Dinner</div>
           <div class="event-title">Final dinner</div>
           <div class="event-desc">Choose your favourite restaurant from the trip — or return to a place that moved you. A fitting last supper in this city.</div>
-          <div class="event-note">You might revisit Riche, Wood Stockholm, or discover something new. Make it count.</div>
+          <div class="options-label">Suggestions pour ce soir</div>
+          <div class="option-items">
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1544148103-0773bf10d330?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Prinsen</div>
+                    <div class="option-photo-cat">Classic Stockholm brasserie · timeless</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Classic Stockholm brasserie</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Prinsen','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Prinsen+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Brasseri Astoria</div>
+                    <div class="option-photo-cat">Art deco · grand · elegant</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Art deco</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Brasseri Astoria','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Brasseri+Astoria+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Tengu</div>
+                    <div class="option-photo-cat">Japanese · sleek · Stockholm favourite</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Japanese</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Tengu','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Tengu+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="option-item-photo">
+              <div class="option-photo" style="background-image:url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80&auto=format&fit=crop');">
+                <div class="option-photo-overlay"></div>
+                <div class="option-photo-label">
+                  <div>
+                    <div class="option-photo-name">Ciccio's</div>
+                    <div class="option-photo-cat">Italian · neighbourhood gem · warm</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-body">
+                <div style="font-size:12px;color:var(--text-muted);font-weight:300;">Italian</div>
+                <div class="option-actions">
+                  <button class="icon-btn fav" onclick="toggleFav(this,'Ciccio's','dinner')" title="Save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <a class="icon-btn" href="https://maps.google.com/?q=Ciccio+Stockholm" target="_blank" title="Maps">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2086,7 +2316,7 @@ body {
 
 
 <!-- Days overview panel (shown when Days tab tapped) -->
-<div id="page-days" class="page page-top" style="display:none;">
+<div id="page-days" class="page" style="display:none;padding-top:calc(var(--safe-top) + 8px);">
   <div class="section-header">
     <h2 class="section-title">Your itinerary</h2>
   </div>
