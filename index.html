@@ -2686,12 +2686,44 @@ body {
 
 
 <script>
-// ── STATE ──
-let currentPage = 'home';
-let prevPage = null;
-let favorites = JSON.parse(localStorage.getItem('stockholm-favs') || '[]');
+// ══════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════
+const SB_URL = 'https://tuarjmzjvnhmnpfkxcbo.supabase.co';
+const SB_KEY = 'sb_publishable_GVl8wU8THUveLkWRiKB4Rg_MhBT7J_3';
+const SB_TABLE = 'stockholm_steps';
 
-// ── NAVIGATION ──
+async function sbFetch(path, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/' + path, opts);
+    if (!res.ok) return null;
+    const text = await res.text();
+    return text ? JSON.parse(text) : [];
+  } catch(e) { console.log('SB error:', e); return null; }
+}
+
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+let currentPage = 'home';
+let prevPage = 'home';
+let favorites = JSON.parse(localStorage.getItem('stockholm-favs') || '[]');
+let customSteps = [];
+let selectedPhotoBase64 = null;
+
+// ══════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => {
     p.classList.remove('active');
@@ -2700,23 +2732,18 @@ function showPage(id) {
   const el = document.getElementById('page-' + id);
   if (el) {
     el.style.display = 'block';
-    el.classList.add('active');
+    setTimeout(() => el.classList.add('active'), 10);
     window.scrollTo(0, 0);
   }
 }
 
 function navigate(tab) {
-  // Update nav state
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('nav-' + tab);
   if (btn) btn.classList.add('active');
-
-  if (tab === 'favorites') {
-    renderFavorites();
-  }
-
   prevPage = currentPage;
   currentPage = tab;
+  if (tab === 'favorites') renderFavorites();
   showPage(tab);
 }
 
@@ -2728,121 +2755,18 @@ function showDay(dayId) {
 }
 
 function goBack() {
-  const back = prevPage || 'home';
-  if (['arrival','day1','day2','day3','day4'].includes(back) || ['home','days','favorites'].includes(back)) {
-    navigate(back.replace(/arrival|day\d/, '') || back);
-    // re-activate proper nav
-    if (['home','days','favorites'].includes(back)) {
-      navigate(back);
-    } else {
-      showDay(back);
-    }
-  } else {
-    navigate('home');
-  }
-  window.scrollTo(0, 0);
+  const back = ['home','days','favorites'].includes(prevPage) ? prevPage : 'home';
+  navigate(back);
 }
 
-// ── FAVORITES ──
-function toggleFav(btn, name, type) {
-  const idx = favorites.findIndex(f => f.name === name);
-  if (idx > -1) {
-    favorites.splice(idx, 1);
-    btn.classList.remove('saved');
-  } else {
-    favorites.push({ name, type, saved: new Date().toISOString() });
-    btn.classList.add('saved');
-    // animate
-    btn.style.transform = 'scale(1.3)';
-    setTimeout(() => { btn.style.transform = ''; }, 200);
-  }
-  localStorage.setItem('stockholm-favs', JSON.stringify(favorites));
-  document.getElementById('fav-count').textContent = favorites.length + ' place' + (favorites.length !== 1 ? 's' : '');
-}
-
-function renderFavorites() {
-  const list = document.getElementById('fav-list');
-  document.getElementById('fav-count').textContent = favorites.length + ' place' + (favorites.length !== 1 ? 's' : '');
-  
-  if (favorites.length === 0) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">♡</div>
-      <div class="empty-title">Your saved spots</div>
-      <div class="empty-sub">Tap the heart icon on any restaurant or place to save it here.</div>
-    </div>`;
-    return;
-  }
-
-  const typeLabels = { brunch: 'Brunch', lunch: 'Lunch', dinner: 'Dinner', place: 'Place' };
-  list.innerHTML = `<div style="padding: 0 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 16px;">` +
-    favorites.map(f => `
-      <div style="background:var(--surface);border-radius:var(--radius-sm);border:1px solid rgba(199,180,160,0.2);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-        <div>
-          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:4px;">${typeLabels[f.type] || f.type}</div>
-          <div style="font-family:var(--serif);font-size:18px;font-weight:400;color:var(--text);">${f.name}</div>
-        </div>
-        <div style="color:var(--highlight);font-size:18px;">♥</div>
-      </div>
-    `).join('') + `</div>`;
-}
-
-// ── WEATHER ──
-async function loadWeather() {
-  const LAT = 59.3293;
-  const LON = 18.0686;
-
-  // Try Open-Meteo (free, no key needed)
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_max,temperature_2m_min,weathercode&current_weather=true&timezone=Europe/Stockholm&forecast_days=5`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('API failed');
-    const data = await res.json();
-
-    const curr = data.current_weather;
-    const temp = Math.round(curr.temperature);
-    const code = curr.weathercode;
-
-    document.getElementById('w-temp').textContent = temp + '°C';
-    document.getElementById('w-icon').textContent = weatherIcon(code);
-    document.getElementById('w-desc').textContent = weatherDesc(code) + (curr.windspeed > 20 ? ' · breezy' : '');
-
-    // Forecast for trip dates (Apr 3–7)
-    const days = data.daily;
-    const dayLabels = ['Fri', 'Sat', 'Sun', 'Mon', 'Tue'];
-    const forecastEl = document.getElementById('w-forecast');
-    forecastEl.innerHTML = '';
-
-    for (let i = 0; i < Math.min(5, days.time.length); i++) {
-      const maxT = Math.round(days.temperature_2m_max[i]);
-      const wc = days.weathercode[i];
-      const div = document.createElement('div');
-      div.className = 'weather-day';
-      div.innerHTML = `
-        <div class="weather-day-label">${dayLabels[i]}</div>
-        <div class="weather-day-icon">${weatherIcon(wc)}</div>
-        <div class="weather-day-temp">${maxT}°</div>
-      `;
-      forecastEl.appendChild(div);
-
-      // Update day pages
-      const dayTemps = ['day1-temp','day2-temp','day3-temp','day4-temp'];
-      if (i >= 1 && i <= 4 && document.getElementById(dayTemps[i-1])) {
-        document.getElementById(dayTemps[i-1]).textContent = maxT + '°C';
-      }
-    }
-  } catch(e) {
-    // Graceful fallback
-    document.getElementById('w-temp').textContent = '6°C';
-    document.getElementById('w-icon').textContent = '🌤';
-    document.getElementById('w-desc').textContent = 'Spring in Stockholm';
-    document.getElementById('w-forecast').innerHTML = `
-      <div class="weather-day"><div class="weather-day-label">Fri</div><div class="weather-day-icon">🌤</div><div class="weather-day-temp">5°</div></div>
-      <div class="weather-day"><div class="weather-day-label">Sat</div><div class="weather-day-icon">☁️</div><div class="weather-day-temp">7°</div></div>
-      <div class="weather-day"><div class="weather-day-label">Sun</div><div class="weather-day-icon">🌦</div><div class="weather-day-temp">6°</div></div>
-      <div class="weather-day"><div class="weather-day-label">Mon</div><div class="weather-day-icon">⛅</div><div class="weather-day-temp">8°</div></div>
-      <div class="weather-day"><div class="weather-day-label">Tue</div><div class="weather-day-icon">🌤</div><div class="weather-day-temp">9°</div></div>
-    `;
-  }
+// ══════════════════════════════════
+// WEATHER
+// ══════════════════════════════════
+function openWeather() {
+  window.location.href = 'weather://';
+  setTimeout(() => {
+    window.open('https://weather.com/weather/today/l/59.3293,18.0686', '_blank');
+  }, 400);
 }
 
 function weatherIcon(code) {
@@ -2850,7 +2774,6 @@ function weatherIcon(code) {
   if (code <= 2) return '🌤';
   if (code <= 3) return '☁️';
   if (code <= 48) return '🌫';
-  if (code <= 57) return '🌦';
   if (code <= 67) return '🌧';
   if (code <= 77) return '🌨';
   if (code <= 82) return '🌦';
@@ -2859,396 +2782,364 @@ function weatherIcon(code) {
 }
 
 function weatherDesc(code) {
-  if (code === 0) return 'Clear skies';
-  if (code <= 2) return 'Mostly clear';
-  if (code <= 3) return 'Overcast';
-  if (code <= 48) return 'Foggy';
-  if (code <= 57) return 'Light drizzle';
-  if (code <= 67) return 'Rainy';
-  if (code <= 77) return 'Snow flurries';
-  if (code <= 82) return 'Showers';
-  if (code <= 99) return 'Thunderstorm';
+  if (code === 0) return 'Ciel dégagé';
+  if (code <= 2) return 'Partiellement nuageux';
+  if (code <= 3) return 'Couvert';
+  if (code <= 48) return 'Brumeux';
+  if (code <= 67) return 'Pluvieux';
+  if (code <= 77) return 'Neigeux';
+  if (code <= 82) return 'Averses';
+  if (code <= 99) return 'Orageux';
   return 'Variable';
 }
 
-// ── INSTALL PROMPT (iOS Safari) ──
-function checkInstallPrompt() {
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = window.navigator.standalone;
-  const dismissed = localStorage.getItem('install-dismissed');
-  
-  if (isIOS && !isStandalone && !dismissed) {
-    setTimeout(() => {
-      document.getElementById('install-banner').classList.add('visible');
-    }, 3000);
+async function loadWeather() {
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=59.3293&longitude=18.0686&daily=temperature_2m_max,temperature_2m_min,weathercode&current_weather=true&timezone=Europe/Stockholm&forecast_days=5';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Weather API failed');
+    const data = await res.json();
+    const curr = data.current_weather;
+    const temp = Math.round(curr.temperature);
+    const code = curr.weathercode;
+
+    const iconEl = document.getElementById('w-icon');
+    const tempEl = document.getElementById('w-temp');
+    const descEl = document.getElementById('w-desc');
+    const forecastEl = document.getElementById('w-forecast');
+
+    if (iconEl) iconEl.textContent = weatherIcon(code);
+    if (tempEl) tempEl.textContent = temp + '°C';
+    if (descEl) descEl.textContent = weatherDesc(code);
+
+    if (forecastEl) {
+      const days = data.daily;
+      const labels = ['Ven', 'Sam', 'Dim', 'Lun', 'Mar'];
+      forecastEl.innerHTML = '';
+      for (let i = 0; i < 5; i++) {
+        const maxT = Math.round(days.temperature_2m_max[i]);
+        const wc = days.weathercode[i];
+        const d = document.createElement('div');
+        d.className = 'weather-day';
+        d.innerHTML = '<div class="weather-day-label">' + labels[i] + '</div>' +
+          '<div class="weather-day-icon">' + weatherIcon(wc) + '</div>' +
+          '<div class="weather-day-temp">' + maxT + '°</div>';
+        forecastEl.appendChild(d);
+        // Update day pages temps
+        const dayTemps = [null,'day1-temp','day2-temp','day3-temp','day4-temp'];
+        if (i >= 1 && dayTemps[i]) {
+          const el = document.getElementById(dayTemps[i]);
+          if (el) el.textContent = maxT + '°C';
+        }
+      }
+    }
+  } catch(e) {
+    const tempEl = document.getElementById('w-temp');
+    const descEl = document.getElementById('w-desc');
+    const iconEl = document.getElementById('w-icon');
+    if (tempEl) tempEl.textContent = '7°C';
+    if (descEl) descEl.textContent = 'Stockholm en avril';
+    if (iconEl) iconEl.textContent = '🌤';
+    const forecastEl = document.getElementById('w-forecast');
+    if (forecastEl) {
+      forecastEl.innerHTML = 
+        '<div class="weather-day"><div class="weather-day-label">Ven</div><div class="weather-day-icon">🌤</div><div class="weather-day-temp">5°</div></div>' +
+        '<div class="weather-day"><div class="weather-day-label">Sam</div><div class="weather-day-icon">☁️</div><div class="weather-day-temp">7°</div></div>' +
+        '<div class="weather-day"><div class="weather-day-label">Dim</div><div class="weather-day-icon">🌦</div><div class="weather-day-temp">6°</div></div>' +
+        '<div class="weather-day"><div class="weather-day-label">Lun</div><div class="weather-day-icon">⛅</div><div class="weather-day-temp">8°</div></div>' +
+        '<div class="weather-day"><div class="weather-day-label">Mar</div><div class="weather-day-icon">🌤</div><div class="weather-day-temp">9°</div></div>';
+    }
   }
 }
 
-function dismissInstall() {
-  document.getElementById('install-banner').classList.remove('visible');
-  localStorage.setItem('install-dismissed', '1');
+// ══════════════════════════════════
+// FAVORITES
+// ══════════════════════════════════
+function toggleFav(btn, name, type) {
+  const idx = favorites.findIndex(f => f.name === name);
+  if (idx > -1) {
+    favorites.splice(idx, 1);
+    btn.classList.remove('saved');
+  } else {
+    favorites.push({ name, type, saved: new Date().toISOString() });
+    btn.classList.add('saved');
+    btn.style.transform = 'scale(1.35)';
+    setTimeout(() => { btn.style.transform = ''; }, 200);
+  }
+  localStorage.setItem('stockholm-favs', JSON.stringify(favorites));
+  document.getElementById('fav-count').textContent = favorites.length + ' lieu' + (favorites.length !== 1 ? 'x' : '');
 }
 
-// ── RESTORE FAV STATE ──
+function renderFavorites() {
+  const list = document.getElementById('fav-list');
+  const countEl = document.getElementById('fav-count');
+  if (countEl) countEl.textContent = favorites.length + ' lieu' + (favorites.length !== 1 ? 'x' : '');
+  if (!list) return;
+  if (favorites.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">♡</div><div class="empty-title">Vos coups de cœur</div><div class="empty-sub">Appuyez sur ♡ sur un restaurant ou lieu pour le sauvegarder ici.</div></div>';
+    return;
+  }
+  const typeLabels = { brunch:'Brunch', lunch:'Déjeuner', dinner:'Dîner', place:'Lieu' };
+  list.innerHTML = '<div style="padding:0 16px;display:flex;flex-direction:column;gap:10px;padding-bottom:16px;">' +
+    favorites.map(f => '<div style="background:var(--surface);border-radius:var(--radius-sm);border:1px solid rgba(199,180,160,0.2);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;"><div><div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:4px;">' + (typeLabels[f.type] || f.type) + '</div><div style="font-family:var(--serif);font-size:18px;font-weight:400;color:var(--text);">' + f.name + '</div></div><div style="color:var(--highlight);font-size:20px;">♥</div></div>').join('') +
+    '</div>';
+}
+
 function restoreFavStates() {
   favorites.forEach(f => {
     document.querySelectorAll('.icon-btn.fav').forEach(btn => {
-      if (btn.closest('.option-item')) {
-        const nameEl = btn.closest('.option-item').querySelector('.option-name');
-        if (nameEl && nameEl.textContent === f.name) {
-          btn.classList.add('saved');
-        }
+      const nameEl = btn.closest('.option-item, .option-item-photo') && 
+                     (btn.closest('.option-item-photo') ? 
+                      btn.closest('.option-item-photo').querySelector('.option-photo-name') :
+                      btn.closest('.option-item').querySelector('.option-name'));
+      if (nameEl && nameEl.textContent.trim() === f.name) {
+        btn.classList.add('saved');
       }
     });
   });
 }
 
-// ── WEATHER LINK ──
-function openWeather() {
-  // Try native iOS weather app deeplink first, fallback to web
-  const lat = 59.3293, lon = 18.0686;
-  window.location.href = 'weather://';
-  setTimeout(() => {
-    window.open(\`https://weather.com/weather/today/l/\${lat},\${lon}\`, '_blank');
-  }, 500);
-}
-
-// ── INIT ──
-document.addEventListener('DOMContentLoaded', () => {
-  showPage('home');
-  loadWeather();
-  checkInstallPrompt();
-  restoreFavStates();
-  document.getElementById('fav-count').textContent = favorites.length + ' place' + (favorites.length !== 1 ? 's' : '');
-});
-
-// Register service worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
-
-
 // ══════════════════════════════════
-// SUPABASE COLLABORATIVE SYSTEM
+// CUSTOM STEPS (Supabase + local)
 // ══════════════════════════════════
-
-const SUPABASE_TABLE = 'stockholm_steps';
-let supabaseUrl = 'https://tuarjmzjvnhmnpfkxcbo.supabase.co';
-let supabaseKey = 'sb_publishable_GVl8wU8THUveLkWRiKB4Rg_MhBT7J_3';
-// Save to local so isSupabaseConfigured() returns true
-localStorage.setItem('sb_url', supabaseUrl);
-localStorage.setItem('sb_key', supabaseKey);
-let selectedPhotoBase64 = null;
-let customSteps = [];
-let realtimeChannel = null;
-
-// ── SUPABASE CONFIG ──
-function isSupabaseConfigured() {
-  return supabaseUrl && supabaseKey && supabaseUrl.includes('supabase.co');
-}
-
-function saveSupabaseConfig() {
-  const url = document.getElementById('setup-url').value.trim();
-  const key = document.getElementById('setup-key').value.trim();
-  if (!url || !key) return alert('Remplis les deux champs');
-  localStorage.setItem('sb_url', url);
-  localStorage.setItem('sb_key', key);
-  supabaseUrl = url;
-  supabaseKey = key;
-  document.getElementById('setup-screen').classList.remove('open');
-  initSupabase();
-}
-
-function useLocalOnly() {
-  localStorage.setItem('sb_url', 'local');
-  supabaseUrl = 'local';
-  document.getElementById('setup-screen').classList.remove('open');
-  loadCustomSteps();
-}
-
-// ── SUPABASE API CALLS ──
-async function sbFetch(path, method='GET', body=null) {
-  if (!isSupabaseConfigured()) return null;
-  const opts = {
-    method,
-    headers: {
-      'apikey': supabaseKey,
-      'Authorization': 'Bearer ' + supabaseKey,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : ''
-    }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  try {
-    const res = await fetch(supabaseUrl + '/rest/v1/' + path, opts);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch(e) { return null; }
-}
-
-// ── LOAD CUSTOM STEPS ──
 async function loadCustomSteps() {
-  let steps = [];
-  
-  if (isSupabaseConfigured() && supabaseUrl !== 'local') {
-    const data = await sbFetch(SUPABASE_TABLE + '?order=created_at.asc');
-    if (data) {
-      steps = data;
-      // Also save locally as cache
-      localStorage.setItem('custom_steps_cache', JSON.stringify(steps));
-    }
+  // Try Supabase
+  const data = await sbFetch(SB_TABLE + '?order=created_at.asc');
+  if (data && data.length >= 0) {
+    customSteps = data;
+    localStorage.setItem('custom_steps_cache', JSON.stringify(customSteps));
+  } else {
+    // Fallback to cache
+    customSteps = JSON.parse(localStorage.getItem('custom_steps_cache') || '[]');
   }
-  
-  // Fallback to local
-  if (steps.length === 0) {
-    steps = JSON.parse(localStorage.getItem('custom_steps_cache') || '[]');
-  }
-  
-  customSteps = steps;
   renderAllCustomSteps();
-  updateSyncStatus(steps.length);
-}
-
-function updateSyncStatus(count) {
-  const el = document.getElementById('sync-status');
-  if (!el) return;
-  if (count > 0) {
-    el.style.display = 'block';
-    el.innerHTML = isSupabaseConfigured() && supabaseUrl !== 'local' 
-      ? '<span class="sync-dot"></span> ' + count + ' ajout' + (count>1?'s':'') + ' synchronisé' + (count>1?'s':'') + ' avec Lucie'
-      : count + ' ajout' + (count>1?'s':'') + ' en local';
-  }
+  // Poll every 30s
+  setTimeout(loadCustomSteps, 30000);
 }
 
 function renderAllCustomSteps() {
-  // Show custom sections on day pages if they have content
   ['arrival','day1','day2','day3','day4'].forEach(day => {
     const daySteps = customSteps.filter(s => s.day === day);
     const container = document.getElementById('custom-' + day);
-    const list = document.getElementById('custom-' + day + '-list');
-    if (!container || !list) return;
-    
+    const listEl = document.getElementById('custom-' + day + '-list');
+    if (!container || !listEl) return;
     if (daySteps.length > 0) {
       container.style.display = 'block';
-      list.innerHTML = daySteps.map(s => renderCustomCard(s)).join('');
+      listEl.innerHTML = daySteps.map(s => renderCustomCard(s)).join('');
     } else {
       container.style.display = 'none';
     }
   });
+  updateSyncBadge();
+}
+
+function updateSyncBadge() {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  if (customSteps.length > 0) {
+    el.style.display = 'block';
+    el.textContent = '✦ ' + customSteps.length + ' ajout' + (customSteps.length > 1 ? 's' : '') + ' partagé' + (customSteps.length > 1 ? 's' : '') + ' avec Lucie';
+  } else {
+    el.style.display = 'none';
+  }
 }
 
 function renderCustomCard(step) {
-  const mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(step.address || step.name + ' Stockholm');
-  const typeLabels = {
-    restaurant:'🍽 Restaurant', brunch:'☕ Brunch', visit:'🏛 Visite',
-    walk:'🚶 Balade', wellness:'🧖 Wellness', shopping:'🛍 Shopping',
-    bar:'🍸 Bar', other:'✦ Autre'
-  };
-  const photoStyle = step.photo 
-    ? 'background-image:url(' + step.photo + ');' 
-    : 'background:var(--surface2);';
-  const timeStr = step.time ? '<span style="font-size:11px;color:var(--text-light);margin-left:8px;">' + step.time + '</span>' : '';
-  
+  const mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent((step.address || step.name) + ' Stockholm');
+  const typeLabels = { restaurant:'🍽 Restaurant', brunch:'☕ Brunch', visit:'🏛 Visite', walk:'🚶 Balade', wellness:'🧖 Wellness', shopping:'🛍 Shopping', bar:'🍸 Bar', other:'✦ Autre' };
+  const photoStyle = step.photo ? 'background-image:url(' + step.photo + ')' : 'background:var(--surface2)';
   return '<div class="custom-card">' +
     '<div class="custom-card-photo" style="' + photoStyle + '"></div>' +
     '<div class="custom-card-body">' +
       '<div class="custom-card-info">' +
-        '<div class="custom-card-type">' + (typeLabels[step.type] || step.type) + timeStr + '</div>' +
+        '<div class="custom-card-type">' + (typeLabels[step.type] || '✦') + (step.time ? ' · ' + step.time : '') + '</div>' +
         '<div class="custom-card-name">' + step.name + '</div>' +
         (step.note ? '<div style="font-size:12px;color:var(--text-muted);font-weight:300;margin-top:2px;">' + step.note + '</div>' : '') +
       '</div>' +
       '<div style="display:flex;gap:6px;flex-shrink:0;margin-left:10px;">' +
-        '<a href="' + mapsUrl + '" target="_blank" class="icon-btn" title="Maps">' +
+        '<a href="' + mapsUrl + '" target="_blank" class="icon-btn">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
         '</a>' +
-        '<button class="custom-card-delete" onclick="deleteStep('' + step.id + '')" title="Supprimer">✕</button>' +
+        '<button class="custom-card-delete" onclick="deleteStep('' + step.id + '')">✕</button>' +
       '</div>' +
     '</div>' +
   '</div>';
 }
 
-// ── DELETE STEP ──
 async function deleteStep(id) {
   if (!confirm('Supprimer cette étape ?')) return;
-  
-  if (isSupabaseConfigured() && supabaseUrl !== 'local') {
-    await sbFetch(SUPABASE_TABLE + '?id=eq.' + id, 'DELETE');
-  }
-  
+  await sbFetch(SB_TABLE + '?id=eq.' + id, 'DELETE');
   customSteps = customSteps.filter(s => s.id !== id);
   localStorage.setItem('custom_steps_cache', JSON.stringify(customSteps));
   renderAllCustomSteps();
-  updateSyncStatus(customSteps.length);
 }
 
-// ── EDIT MODAL ──
+// ══════════════════════════════════
+// EDIT MODAL
+// ══════════════════════════════════
 function openEditModal() {
-  // Always configured — open modal directly
-  document.getElementById('edit-modal').classList.add('open');
+  const modal = document.getElementById('edit-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  
-  // Pre-select day based on current page
+  // Pre-select current day
   const daySelect = document.getElementById('new-day');
-  if (['arrival','day1','day2','day3','day4'].includes(currentPage)) {
+  if (daySelect && ['arrival','day1','day2','day3','day4'].includes(currentPage)) {
     daySelect.value = currentPage;
   }
 }
 
 function closeEditModal() {
-  document.getElementById('edit-modal').classList.remove('open');
+  const modal = document.getElementById('edit-modal');
+  if (!modal) return;
+  modal.style.display = 'none';
   document.body.style.overflow = '';
-  // Reset form
   document.getElementById('new-name').value = '';
   document.getElementById('new-address').value = '';
   document.getElementById('new-note').value = '';
   document.getElementById('new-time').value = '';
-  document.getElementById('photo-preview').style.backgroundImage = '';
-  document.getElementById('maps-preview').style.display = 'none';
-  document.getElementById('submit-status').style.display = 'none';
+  const preview = document.getElementById('photo-preview');
+  if (preview) preview.style.backgroundImage = '';
+  const status = document.getElementById('submit-status');
+  if (status) status.style.display = 'none';
   selectedPhotoBase64 = null;
 }
 
-// ── PHOTO HANDLING ──
 function handlePhotoSelect(input) {
   const file = input.files[0];
   if (!file) return;
-  
   const reader = new FileReader();
   reader.onload = (e) => {
-    // Compress image before storing
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const MAX = 800;
       let w = img.width, h = img.height;
-      if (w > MAX) { h = h * MAX / w; w = MAX; }
-      if (h > MAX) { w = w * MAX / h; h = MAX; }
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       selectedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
-      document.getElementById('photo-preview').style.backgroundImage = 'url(' + selectedPhotoBase64 + ')';
+      const preview = document.getElementById('photo-preview');
+      if (preview) preview.style.backgroundImage = 'url(' + selectedPhotoBase64 + ')';
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// ── ADDRESS → MAPS AUTO LINK ──
-document.addEventListener('DOMContentLoaded', () => {
-  const addressInput = document.getElementById('new-address');
-  if (addressInput) {
-    addressInput.addEventListener('input', () => {
-      const val = addressInput.value.trim();
-      const preview = document.getElementById('maps-preview');
-      const link = document.getElementById('maps-preview-link');
-      if (val.length > 3) {
-        const mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(val);
-        link.href = mapsUrl;
-        preview.style.display = 'block';
-      } else {
-        preview.style.display = 'none';
-      }
-    });
+function updateMapsPreview() {
+  const val = document.getElementById('new-address').value.trim();
+  const preview = document.getElementById('maps-preview');
+  const link = document.getElementById('maps-preview-link');
+  if (!preview || !link) return;
+  if (val.length > 3) {
+    link.href = 'https://maps.google.com/?q=' + encodeURIComponent(val);
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
   }
-});
+}
 
-// ── SUBMIT NEW STEP ──
 async function submitNewStep() {
   const name = document.getElementById('new-name').value.trim();
+  if (!name) { alert('Ajoute un nom'); return; }
   const address = document.getElementById('new-address').value.trim();
   const type = document.getElementById('new-type').value;
   const day = document.getElementById('new-day').value;
   const time = document.getElementById('new-time').value;
   const note = document.getElementById('new-note').value.trim();
-  
-  if (!name) { alert('Ajoute un nom'); return; }
-  
+
   const btn = document.getElementById('submit-btn');
   const status = document.getElementById('submit-status');
   btn.disabled = true;
   btn.textContent = 'Ajout en cours…';
-  
+
   const step = {
     id: Date.now().toString(),
     name, address, type, day, time, note,
     photo: selectedPhotoBase64 || null,
     created_at: new Date().toISOString()
   };
+
+  const result = await sbFetch(SB_TABLE, 'POST', step);
   
-  let saved = false;
-  
-  // Try Supabase first
-  if (isSupabaseConfigured() && supabaseUrl !== 'local') {
-    const result = await sbFetch(SUPABASE_TABLE, 'POST', step);
-    if (result) {
-      saved = true;
-      status.style.display = 'block';
-      status.innerHTML = '✓ Synchronisé avec Lucie';
-    }
-  }
-  
-  // Always save locally too
   customSteps.push(step);
   localStorage.setItem('custom_steps_cache', JSON.stringify(customSteps));
   renderAllCustomSteps();
-  updateSyncStatus(customSteps.length);
-  
-  if (!saved) {
-    status.style.display = 'block';
-    status.innerHTML = '⚠ Sauvegardé en local (hors ligne)';
-  }
-  
+
+  status.style.display = 'block';
+  status.textContent = result ? '✓ Synchronisé avec Lucie !' : '✓ Ajouté en local';
+
   btn.disabled = false;
-  btn.textContent = 'Ajouter à l\'itinéraire';
-  
+  btn.textContent = 'Ajouter à l'itinéraire';
+
   setTimeout(() => {
     closeEditModal();
-    // Navigate to the day page
     showDay(day);
-  }, 1200);
+  }, 1000);
 }
 
-// ── INIT SUPABASE ──
-async function initSupabase() {
-  // Credentials are hardcoded — always configured
-  
+// ══════════════════════════════════
+// INSTALL BANNER
+// ══════════════════════════════════
+function checkInstallPrompt() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone;
+  const dismissed = localStorage.getItem('install-dismissed');
+  if (isIOS && !isStandalone && !dismissed) {
+    setTimeout(() => {
+      const banner = document.getElementById('install-banner');
+      if (banner) banner.classList.add('visible');
+    }, 3000);
+  }
+}
+
+function dismissInstall() {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.classList.remove('visible');
+  localStorage.setItem('install-dismissed', '1');
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  showPage('home');
+  loadWeather();
+  checkInstallPrompt();
+  restoreFavStates();
   loadCustomSteps();
-  
-  // Poll for updates every 30s (simple alternative to websockets)
-  setInterval(loadCustomSteps, 30000);
+  const countEl = document.getElementById('fav-count');
+  if (countEl) countEl.textContent = favorites.length + ' lieu' + (favorites.length !== 1 ? 'x' : '');
+});
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
-
-
-// Call initSupabase on load
-initSupabase();
 </script>
 
-
-<!-- ══════════════════════════════════
-     FLOATING ADD BUTTON
-══════════════════════════════════ -->
-<button id="edit-fab" onclick="openEditModal()" title="Ajouter une étape">
+<!-- FAB -->
+<button id="edit-fab" onclick="openEditModal()" style="position:fixed;bottom:calc(72px + env(safe-area-inset-bottom) + 16px);right:16px;width:52px;height:52px;border-radius:50%;background:var(--text);color:var(--bg);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:90;box-shadow:0 4px 20px rgba(0,0,0,0.25);">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 </button>
 
-<!-- ══════════════════════════════════
-     EDIT / ADD MODAL
-══════════════════════════════════ -->
-<div id="edit-modal">
-  <div class="modal-header">
-    <div class="modal-title">Ajouter une étape</div>
-    <button class="modal-close" onclick="closeEditModal()">✕</button>
+<!-- EDIT MODAL -->
+<div id="edit-modal" style="position:fixed;inset:0;z-index:300;display:none;flex-direction:column;background:var(--bg);">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 16px) 20px 16px;border-bottom:1px solid rgba(199,180,160,0.2);background:var(--surface);">
+    <div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--text);">Ajouter une étape</div>
+    <button onclick="closeEditModal()" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(199,180,160,0.3);background:none;cursor:pointer;font-size:16px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;">✕</button>
   </div>
-  <div class="modal-body">
+  <div style="flex:1;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch;">
 
-    <div class="form-group">
-      <label class="form-label">Nom du lieu ou restaurant</label>
-      <input class="form-input" id="new-name" type="text" placeholder="ex. Café Pascal, Djurgården…" autocomplete="off">
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Nom du lieu</label>
+      <input id="new-name" type="text" placeholder="ex. Café Pascal, Djurgården…" style="width:100%;padding:12px 14px;border:1px solid rgba(199,180,160,0.3);border-radius:12px;background:var(--surface);font-size:15px;color:var(--text);-webkit-appearance:none;outline:none;font-family:var(--sans);">
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Adresse (pour Google Maps)</label>
-      <input class="form-input" id="new-address" type="text" placeholder="ex. Rörstrandsgatan 19, Stockholm" autocomplete="off">
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Adresse → Maps auto</label>
+      <input id="new-address" type="text" placeholder="ex. Rörstrandsgatan 19, Stockholm" oninput="updateMapsPreview()" style="width:100%;padding:12px 14px;border:1px solid rgba(199,180,160,0.3);border-radius:12px;background:var(--surface);font-size:15px;color:var(--text);-webkit-appearance:none;outline:none;font-family:var(--sans);">
       <div id="maps-preview" style="margin-top:8px;display:none;">
         <a id="maps-preview-link" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent-dark);font-weight:500;text-decoration:none;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -3257,23 +3148,23 @@ initSupabase();
       </div>
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Type</label>
-      <select class="form-select" id="new-type">
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Type</label>
+      <select id="new-type" style="width:100%;padding:12px 14px;border:1px solid rgba(199,180,160,0.3);border-radius:12px;background:var(--surface);font-size:15px;color:var(--text);-webkit-appearance:none;outline:none;font-family:var(--sans);">
         <option value="restaurant">🍽 Restaurant</option>
         <option value="brunch">☕ Brunch / Café</option>
-        <option value="visit">🏛 Visite / Lieu</option>
+        <option value="visit">🏛 Visite</option>
         <option value="walk">🚶 Balade</option>
-        <option value="wellness">🧖 Wellness / Spa</option>
+        <option value="wellness">🧖 Wellness</option>
         <option value="shopping">🛍 Shopping</option>
         <option value="bar">🍸 Bar</option>
         <option value="other">✦ Autre</option>
       </select>
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Jour</label>
-      <select class="form-select" id="new-day">
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Jour</label>
+      <select id="new-day" style="width:100%;padding:12px 14px;border:1px solid rgba(199,180,160,0.3);border-radius:12px;background:var(--surface);font-size:15px;color:var(--text);-webkit-appearance:none;outline:none;font-family:var(--sans);">
         <option value="arrival">Arrivée — Vendredi 3 avril</option>
         <option value="day1">Jour 1 — Samedi 4 avril</option>
         <option value="day2">Jour 2 — Dimanche 5 avril</option>
@@ -3282,55 +3173,31 @@ initSupabase();
       </select>
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Heure (optionnel)</label>
-      <input class="form-input" id="new-time" type="time" placeholder="20:30">
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Heure (optionnel)</label>
+      <input id="new-time" type="time" style="width:100%;padding:12px 14px;border:1px solid rgba(199,180,160,0.3);border-radius:12px;background:var(--surface);font-size:15px;color:var(--text);-webkit-appearance:none;outline:none;font-family:var(--sans);">
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Note personnelle (optionnel)</label>
-      <input class="form-input" id="new-note" type="text" placeholder="ex. Réservation confirmée, essayer le menu…">
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Note (optionnel)</label>
+      <input id="new-note" type="text" placeholder="ex. Réservation confirmée…" style="width:100%;padding:12px 14px;border:1px solid rgba(199,180,160,0.3);border-radius:12px;background:var(--surface);font-size:15px;color:var(--text);-webkit-appearance:none;outline:none;font-family:var(--sans);">
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Photo</label>
-      <div class="photo-upload-area" onclick="document.getElementById('photo-input').click()">
-        <div class="photo-upload-preview" id="photo-preview"></div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Photo</label>
+      <div onclick="document.getElementById('photo-input').click()" style="width:100%;height:140px;border:2px dashed rgba(199,180,160,0.4);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;background:var(--surface);position:relative;overflow:hidden;">
+        <div id="photo-preview" style="position:absolute;inset:0;background-size:cover;background-position:center;border-radius:12px;"></div>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-        <div class="photo-upload-label">Appuyer pour choisir une photo<br><span style="font-size:10px;opacity:0.6">depuis ton iPhone</span></div>
+        <div style="font-size:12px;color:var(--text-light);text-align:center;position:relative;">Choisir une photo depuis l'iPhone</div>
       </div>
       <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhotoSelect(this)">
     </div>
 
-    <button class="submit-btn" id="submit-btn" onclick="submitNewStep()">
+    <button id="submit-btn" onclick="submitNewStep()" style="width:100%;padding:16px;background:var(--text);color:var(--bg);border:none;border-radius:12px;font-family:var(--sans);font-size:15px;font-weight:500;cursor:pointer;letter-spacing:0.03em;margin-top:4px;">
       Ajouter à l'itinéraire
     </button>
-
-    <div id="submit-status" style="text-align:center;font-size:12px;color:var(--text-muted);padding:12px;display:none;"></div>
-
+    <div id="submit-status" style="text-align:center;font-size:13px;color:var(--accent-dark);padding:12px;display:none;font-weight:500;"></div>
   </div>
 </div>
-
-<!-- ══════════════════════════════════
-     SUPABASE SETUP SCREEN
-══════════════════════════════════ -->
-<div id="setup-screen">
-  <div style="font-size:48px;margin-bottom:8px;">✦</div>
-  <div style="font-family:var(--serif);font-size:28px;font-weight:400;color:var(--text);">Configuration</div>
-  <div style="font-size:13px;color:var(--text-muted);line-height:1.6;max-width:280px;">
-    Pour partager vos ajouts avec Lucie, entrez votre clé Supabase. Ne faire qu'une seule fois.
-  </div>
-  <div style="width:100%;max-width:320px;margin-top:8px;">
-    <label class="form-label">Supabase URL</label>
-    <input class="form-input" id="setup-url" type="text" placeholder="https://xxxx.supabase.co" style="margin-bottom:12px;">
-    <label class="form-label">Supabase Anon Key</label>
-    <input class="form-input" id="setup-key" type="text" placeholder="eyJhbGci...">
-  </div>
-  <button class="submit-btn" style="max-width:320px;" onclick="saveSupabaseConfig()">Enregistrer</button>
-  <button style="background:none;border:none;color:var(--text-light);font-size:13px;cursor:pointer;margin-top:4px;" onclick="useLocalOnly()">
-    Utiliser en local seulement (pas de partage)
-  </button>
-</div>
-
 </body>
 </html>
