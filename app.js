@@ -121,15 +121,31 @@ function wDesc(c) {
 }
 
 async function loadWeather() {
-  // start_date + end_date = exactement les 5 dates du voyage, peu importe quand on appelle
+  var labels  = ['Ven 3','Sam 4','Dim 5','Lun 6','Mar 7'];
+  var targets = ['2026-04-03','2026-04-04','2026-04-05','2026-04-06','2026-04-07'];
+  var dayTempIds = [null,'day1-temp','day2-temp','day3-temp','day4-temp'];
+
+  // Stratégie : demander 16 jours de prévision + filtrer les dates exactes du voyage
+  // Si elles ne sont pas encore disponibles, utiliser le fallback élégant
   var url = 'https://api.open-meteo.com/v1/forecast'
     + '?latitude=59.3293&longitude=18.0686'
     + '&daily=temperature_2m_max,temperature_2m_min,weathercode'
     + '&timezone=Europe/Stockholm'
-    + '&start_date=2026-04-03&end_date=2026-04-07';
+    + '&forecast_days=16';
 
-  var labels = ['Ven 3','Sam 4','Dim 5','Lun 6','Mar 7'];
-  var dayTempIds = [null,'day1-temp','day2-temp','day3-temp','day4-temp'];
+  function setFallback() {
+    var el;
+    el = document.getElementById('w-icon'); if (el) el.textContent = '\uD83C\uDF24\uFE0F';
+    el = document.getElementById('w-temp'); if (el) el.textContent = '~5\u00B0C';
+    el = document.getElementById('w-desc'); if (el) el.textContent = 'Stockholm d\u00E9but avril \u00B7 pr\u00E9visions bient\u00F4t';
+    var fe = document.getElementById('w-forecast');
+    if (fe) fe.innerHTML =
+      '<div class="weather-day"><div class="weather-day-label">Ven 3</div><div class="weather-day-icon">\uD83C\uDF24\uFE0F</div><div class="weather-day-temp">~5\u00B0</div></div>' +
+      '<div class="weather-day"><div class="weather-day-label">Sam 4</div><div class="weather-day-icon">\u2601\uFE0F</div><div class="weather-day-temp">~7\u00B0</div></div>' +
+      '<div class="weather-day"><div class="weather-day-label">Dim 5</div><div class="weather-day-icon">\uD83C\uDF26\uFE0F</div><div class="weather-day-temp">~6\u00B0</div></div>' +
+      '<div class="weather-day"><div class="weather-day-label">Lun 6</div><div class="weather-day-icon">\u26C5</div><div class="weather-day-temp">~8\u00B0</div></div>' +
+      '<div class="weather-day"><div class="weather-day-label">Mar 7</div><div class="weather-day-icon">\uD83C\uDF24\uFE0F</div><div class="weather-day-temp">~9\u00B0</div></div>';
+  }
 
   try {
     var res = await fetch(url);
@@ -137,46 +153,65 @@ async function loadWeather() {
     var data = await res.json();
     var d = data.daily;
 
-    // Index 0=3 avril, 1=4 avril, 2=5 avril, 3=6 avril, 4=7 avril — toujours
-    var mainMax  = Math.round(d.temperature_2m_max[1]);
-    var mainCode = d.weathercode[1];
+    // Chercher chaque date du voyage dans le tableau renvoyé
+    var found = [];
+    for (var i = 0; i < targets.length; i++) {
+      var idx = d.time.indexOf(targets[i]);
+      found.push(idx);
+    }
 
-    var el; 
-    el = document.getElementById('w-icon'); if (el) el.textContent = wIcon(mainCode);
-    el = document.getElementById('w-temp'); if (el) el.textContent = mainMax + '\u00B0C';
-    el = document.getElementById('w-desc'); if (el) el.textContent = wDesc(mainCode) + ' \u00B7 Stockholm 3\u20137 avril';
+    // Si aucune date trouvée : trop tôt (voyage dans +16j)
+    if (found.every(function(x) { return x === -1; })) {
+      setFallback();
+      return;
+    }
 
     var forecastEl = document.getElementById('w-forecast');
-    if (forecastEl) {
-      forecastEl.innerHTML = '';
-      for (var i = 0; i < 5; i++) {
-        var max = Math.round(d.temperature_2m_max[i]);
-        var min = Math.round(d.temperature_2m_min[i]);
-        var wc  = d.weathercode[i];
+    if (forecastEl) forecastEl.innerHTML = '';
+
+    var mainSet = false;
+    for (var i = 0; i < targets.length; i++) {
+      var di = found[i];
+      var label = labels[i];
+      if (di === -1) {
+        // Date pas encore dispo
+        if (forecastEl) {
+          var div = document.createElement('div');
+          div.className = 'weather-day';
+          div.innerHTML = '<div class="weather-day-label">' + label + '</div>'
+            + '<div class="weather-day-icon" style="opacity:0.35">—</div>'
+            + '<div class="weather-day-temp" style="opacity:0.35">?</div>';
+          forecastEl.appendChild(div);
+        }
+        continue;
+      }
+      var maxT = Math.round(d.temperature_2m_max[di]);
+      var wc   = d.weathercode[di];
+      if (forecastEl) {
         var div = document.createElement('div');
         div.className = 'weather-day';
-        div.innerHTML = '<div class="weather-day-label">' + labels[i] + '</div>'
+        div.innerHTML = '<div class="weather-day-label">' + label + '</div>'
           + '<div class="weather-day-icon">' + wIcon(wc) + '</div>'
-          + '<div class="weather-day-temp">' + max + '\u00B0</div>';
+          + '<div class="weather-day-temp">' + maxT + '\u00B0</div>';
         forecastEl.appendChild(div);
-        if (i >= 1 && dayTempIds[i]) {
-          el = document.getElementById(dayTempIds[i]);
-          if (el) el.textContent = max + '\u00B0C';
-        }
+      }
+      if (i >= 1 && dayTempIds[i]) {
+        var el = document.getElementById(dayTempIds[i]);
+        if (el) el.textContent = maxT + '\u00B0C';
+      }
+      // Météo principale = 4 avril (i=1) si dispo, sinon premier dispo
+      if (!mainSet && i >= 1) {
+        var el;
+        el = document.getElementById('w-icon'); if (el) el.textContent = wIcon(wc);
+        el = document.getElementById('w-temp'); if (el) el.textContent = maxT + '\u00B0C';
+        el = document.getElementById('w-desc'); if (el) el.textContent = wDesc(wc) + ' \u00B7 Stockholm 3\u20137 avril';
+        mainSet = true;
       }
     }
+    if (!mainSet) setFallback();
   } catch(e) {
-    console.log('Weather error:', e);
-    el = document.getElementById('w-icon'); if (el) el.textContent = '\uD83C\uDF24\uFE0F';
-    el = document.getElementById('w-temp'); if (el) el.textContent = '~7\u00B0C';
-    el = document.getElementById('w-desc'); if (el) el.textContent = 'Stockholm \u00B7 d\u00E9but avril';
-    var fe = document.getElementById('w-forecast');
-    if (fe) fe.innerHTML =
-      '<div class="weather-day"><div class="weather-day-label">Ven 3</div><div class="weather-day-icon">\uD83C\uDF24\uFE0F</div><div class="weather-day-temp">5\u00B0</div></div>' +
-      '<div class="weather-day"><div class="weather-day-label">Sam 4</div><div class="weather-day-icon">\u2601\uFE0F</div><div class="weather-day-temp">7\u00B0</div></div>' +
-      '<div class="weather-day"><div class="weather-day-label">Dim 5</div><div class="weather-day-icon">\uD83C\uDF26\uFE0F</div><div class="weather-day-temp">6\u00B0</div></div>' +
-      '<div class="weather-day"><div class="weather-day-label">Lun 6</div><div class="weather-day-icon">\u26C5</div><div class="weather-day-temp">8\u00B0</div></div>' +
-      '<div class="weather-day"><div class="weather-day-label">Mar 7</div><div class="weather-day-icon">\uD83C\uDF24\uFE0F</div><div class="weather-day-temp">9\u00B0</div></div>';
+    console.log('Weather:', e);
+    setFallback();
   }
 }
 
@@ -618,6 +653,164 @@ async function submitNewStep() {
   }
 }
 
+
+// ══════════════════════════════════
+// ÉDITION DES ÉTAPES HARDCODÉES — sync Supabase
+// ══════════════════════════════════
+var SB_CARDS = 'stockholm_card_edits';
+var editingCardId = null;
+var cardEditPhoto = null;
+var cardEditsCache = {}; // { cardId: {title,note,photo} }
+
+async function loadCardEdits() {
+  var data = await sbFetch(SB_CARDS + '?select=card_id,title,note,photo');
+  if (data && Array.isArray(data)) {
+    cardEditsCache = {};
+    data.forEach(function(row) { cardEditsCache[row.card_id] = row; });
+    // Aussi mettre en cache local pour offline
+    try { localStorage.setItem('card_edits_cache', JSON.stringify(cardEditsCache)); } catch(e) {}
+  } else {
+    // Fallback local
+    try { cardEditsCache = JSON.parse(localStorage.getItem('card_edits_cache') || '{}'); } catch(e) { cardEditsCache = {}; }
+  }
+  applyAllCardEdits();
+}
+
+function applyAllCardEdits() {
+  Object.keys(cardEditsCache).forEach(function(cardId) {
+    applyCardEdit(cardId, cardEditsCache[cardId]);
+  });
+}
+
+function applyCardEdit(cardId, data) {
+  var card = document.getElementById(cardId);
+  if (!card || !data) return;
+  if (data.title) {
+    var t = card.querySelector('.event-title');
+    if (t) t.textContent = data.title;
+  }
+  if (data.note) {
+    var n = card.querySelector('.event-desc') || card.querySelector('.event-note');
+    if (n) {
+      n.textContent = data.note;
+    } else {
+      var t2 = card.querySelector('.event-title');
+      if (t2) {
+        var newN = document.createElement('div');
+        newN.className = 'event-note';
+        newN.textContent = data.note;
+        t2.insertAdjacentElement('afterend', newN);
+      }
+    }
+  }
+  if (data.photo) {
+    var photoEl = document.getElementById('ephoto-' + cardId);
+    if (photoEl) {
+      photoEl.style.backgroundImage = 'url(' + data.photo + ')';
+      photoEl.classList.add('has-photo');
+      var svgEl = photoEl.querySelector('svg');
+      var spanEl = photoEl.querySelector('span');
+      if (svgEl) svgEl.style.display = 'none';
+      if (spanEl) spanEl.style.display = 'none';
+    }
+  }
+}
+
+function openCardEdit(cardId) {
+  editingCardId = cardId;
+  cardEditPhoto = null;
+  var card = document.getElementById(cardId);
+  if (!card) return;
+
+  var titleEl = card.querySelector('.event-title');
+  var noteEl  = card.querySelector('.event-desc') || card.querySelector('.event-note');
+  var saved   = cardEditsCache[cardId] || {};
+
+  document.getElementById('cedit-title').value = saved.title || (titleEl ? titleEl.textContent.trim() : '');
+  document.getElementById('cedit-note').value  = saved.note  || (noteEl  ? noteEl.textContent.trim()  : '');
+
+  var previewEl = document.getElementById('cedit-photo-preview');
+  if (saved.photo && previewEl) {
+    previewEl.style.backgroundImage = 'url(' + saved.photo + ')';
+    cardEditPhoto = saved.photo;
+  } else if (previewEl) {
+    previewEl.style.backgroundImage = '';
+  }
+
+  var status = document.getElementById('cedit-status');
+  if (status) status.style.display = 'none';
+  document.getElementById('card-edit-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCardEdit() {
+  editingCardId = null;
+  cardEditPhoto = null;
+  document.getElementById('card-edit-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleCardPhotoSelect(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var MAX = 900, w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h*MAX/w); w = MAX; }
+      if (h > MAX) { w = Math.round(w*MAX/h); h = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cardEditPhoto = canvas.toDataURL('image/jpeg', 0.78);
+      var prev = document.getElementById('cedit-photo-preview');
+      if (prev) prev.style.backgroundImage = 'url(' + cardEditPhoto + ')';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveCardEdit() {
+  if (!editingCardId) return;
+  var btn = document.getElementById('cedit-save-btn');
+  var status = document.getElementById('cedit-status');
+  btn.disabled = true;
+  btn.textContent = 'Enregistrement...';
+
+  var title = document.getElementById('cedit-title').value.trim();
+  var note  = document.getElementById('cedit-note').value.trim();
+  var existing = cardEditsCache[editingCardId] || {};
+  var photo = cardEditPhoto || existing.photo || null;
+
+  var row = { card_id: editingCardId, title: title, note: note, photo: photo, updated_at: new Date().toISOString() };
+
+  // Upsert dans Supabase (delete + insert)
+  await sbFetch(SB_CARDS + '?card_id=eq.' + editingCardId, 'DELETE');
+  var result = await sbFetch(SB_CARDS, 'POST', row);
+
+  // Mettre à jour le cache local
+  cardEditsCache[editingCardId] = row;
+  try { localStorage.setItem('card_edits_cache', JSON.stringify(cardEditsCache)); } catch(e) {}
+
+  // Appliquer en live
+  applyCardEdit(editingCardId, row);
+
+  status.textContent = result ? '\u2713 Synchronis\u00E9 avec Lucie !' : '\u2713 Sauvegard\u00E9 en local';
+  status.style.display = 'block';
+  btn.disabled = false;
+  btn.textContent = 'Enregistrer';
+  setTimeout(function() { closeCardEdit(); }, 800);
+}
+
+function restoreCardEdits() {
+  // Appelé au boot — les vrais données viennent de loadCardEdits()
+  // Ici juste le cache local en attendant Supabase
+  try { cardEditsCache = JSON.parse(localStorage.getItem('card_edits_cache') || '{}'); } catch(e) { cardEditsCache = {}; }
+  applyAllCardEdits();
+}
+
 // ══════════════════════════════════
 // INSTALL BANNER
 // ══════════════════════════════════
@@ -648,6 +841,8 @@ document.addEventListener('DOMContentLoaded', function() {
   loadCustomSteps();
   initDayPhotoEdit();
   restoreAllPhotos();
+  restoreCardEdits();
+  loadCardEdits();
   var fc = document.getElementById('fav-count');
   if (fc) fc.textContent = favorites.length + ' lieu' + (favorites.length !== 1 ? 'x' : '');
 });
