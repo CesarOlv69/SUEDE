@@ -1,35 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <!-- Background -->
-  <rect width="1024" height="1024" rx="220" fill="#1D1D1B"/>
-  
-  <!-- Outer ring -->
-  <circle cx="512" cy="512" r="340" fill="none" stroke="#C6B59A" stroke-width="1.5" opacity="0.5"/>
-  
-  <!-- Subtle texture ring -->
-  <circle cx="512" cy="512" r="290" fill="none" stroke="#8C9A8B" stroke-width="0.8" opacity="0.3"/>
-  
-  <!-- Nordic compass star - 4 large points -->
-  <!-- North -->
-  <path d="M512 172 L532 492 L512 512 L492 492 Z" fill="#F6F2EC" opacity="0.95"/>
-  <!-- South -->
-  <path d="M512 852 L532 532 L512 512 L492 532 Z" fill="#F6F2EC" opacity="0.95"/>
-  <!-- East -->
-  <path d="M852 512 L532 532 L512 512 L532 492 Z" fill="#C6B59A" opacity="0.9"/>
-  <!-- West -->
-  <path d="M172 512 L492 492 L512 512 L492 532 Z" fill="#C6B59A" opacity="0.9"/>
-  
-  <!-- 4 minor points (diagonal) -->
-  <!-- NE -->
-  <path d="M738 286 L532 492 L512 512 L532 492 L738 286Z" fill="#8C9A8B" opacity="0.7"/>
-  <!-- NW -->
-  <path d="M286 286 L492 492 L512 512 L492 492 L286 286Z" fill="#8C9A8B" opacity="0.7"/>
-  <!-- SE -->
-  <path d="M738 738 L532 532 L512 512 L532 532 L738 738Z" fill="#8C9A8B" opacity="0.6"/>
-  <!-- SW -->
-  <path d="M286 738 L492 532 L512 512 L492 532 L286 738Z" fill="#8C9A8B" opacity="0.6"/>
-  
-  <!-- Center disc -->
-  <circle cx="512" cy="512" r="36" fill="#1D1D1B"/>
-  <circle cx="512" cy="512" r="24" fill="#C6B59A" opacity="0.9"/>
-  <circle cx="512" cy="512" r="10" fill="#1D1D1B"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#2A2520"/>
+      <stop offset="100%" stop-color="#141210"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8D5A8"/>
+      <stop offset="40%" stop-color="#C6A96A"/>
+      <stop offset="100%" stop-color="#9A7A45"/>
+    </linearGradient>
+    <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D4B97A"/>
+      <stop offset="100%" stop-color="#8A6535"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fond arrondi -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- Anneau extérieur fin -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#goldRing)" stroke-width="1.2" opacity="0.5"/>
+
+  <!-- Monogramme C · L -->
+  <!-- Lettre C -->
+  <text
+    x="148"
+    y="304"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="188"
+    font-weight="400"
+    font-style="italic"
+    fill="url(#gold)"
+    text-anchor="middle"
+    letter-spacing="-4"
+    opacity="1"
+  >C</text>
+
+  <!-- Séparateur central · -->
+  <text
+    x="260"
+    y="282"
+    font-family="Georgia, serif"
+    font-size="52"
+    fill="url(#goldRing)"
+    text-anchor="middle"
+    opacity="0.75"
+  >·</text>
+
+  <!-- Lettre L -->
+  <text
+    x="368"
+    y="304"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="188"
+    font-weight="400"
+    font-style="italic"
+    fill="url(#gold)"
+    text-anchor="middle"
+    letter-spacing="-4"
+    opacity="1"
+  >L</text>
+
+  <!-- Ligne décorative sous le monogramme -->
+  <line x1="176" y1="326" x2="336" y2="326" stroke="url(#goldRing)" stroke-width="0.8" opacity="0.5"/>
 </svg>
