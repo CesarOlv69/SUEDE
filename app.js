@@ -663,7 +663,6 @@ var cardEditPhoto = null;
 var cardEditsCache = {}; // { cardId: {title,note,photo} }
 
 
-// ── Trier les items d'une timeline par horaire ──
 function sortTimeline(tl) {
   if (!tl) return;
   var items = Array.from(tl.querySelectorAll('.timeline-item'));
@@ -716,15 +715,21 @@ function applyCardEdit(cardId, data) {
       }
     }
   }
+  if (data.time) {
+    var tlItem = card.closest('.timeline-item');
+    if (tlItem) {
+      var timeEl = tlItem.querySelector('.timeline-time');
+      if (timeEl) timeEl.textContent = data.time;
+    }
+  }
   if (data.photo) {
     var photoEl = document.getElementById('ephoto-' + cardId);
     if (photoEl) {
       photoEl.style.backgroundImage = 'url(' + data.photo + ')';
       photoEl.classList.add('has-photo');
-      var svgEl = photoEl.querySelector('svg');
-      var spanEl = photoEl.querySelector('span');
-      if (svgEl) svgEl.style.display = 'none';
-      if (spanEl) spanEl.style.display = 'none';
+      var sv = photoEl.querySelector('svg'), sp = photoEl.querySelector('span');
+      if (sv) sv.style.display = 'none';
+      if (sp) sp.style.display = 'none';
     }
   }
 }
@@ -750,15 +755,15 @@ function openCardEdit(cardId) {
     previewEl.style.backgroundImage = '';
   }
 
-  // Horaire depuis le timeline-item parent
+  var status = document.getElementById('cedit-status');
+  if (status) status.style.display = 'none';
+  // Lire horaire depuis timeline
   var tlItem = card ? card.closest('.timeline-item') : null;
   var timeEl = tlItem ? tlItem.querySelector('.timeline-time') : null;
   var savedTime = (saved.time) || (timeEl ? timeEl.textContent.trim() : '');
   var ceditTimeEl = document.getElementById('cedit-time');
   if (ceditTimeEl) ceditTimeEl.value = savedTime;
 
-  var status = document.getElementById('cedit-status');
-  if (status) status.style.display = 'none';
   var modal = document.getElementById('card-edit-modal');
   if (modal) { modal.style.display = 'flex'; modal.classList.add('open'); }
   document.body.style.overflow = 'hidden';
@@ -801,20 +806,16 @@ async function saveCardEdit() {
   btn.disabled = true;
   btn.textContent = 'Enregistrement...';
 
-  var title = document.getElementById('cedit-title').value.trim();
+    var title = document.getElementById('cedit-title').value.trim();
   var note  = document.getElementById('cedit-note').value.trim();
+  var timeVal = document.getElementById('cedit-time') ? document.getElementById('cedit-time').value.trim() : '';
   var existing = cardEditsCache[editingCardId] || {};
   var photo = cardEditPhoto || existing.photo || null;
-
-  var row = { card_id: editingCardId, title: title, note: note, photo: photo, updated_at: new Date().toISOString() };
+  var row = { card_id: editingCardId, title: title, note: note, time: timeVal, photo: photo, updated_at: new Date().toISOString() };
 
   // Upsert dans Supabase (delete + insert)
   await sbFetch(SB_CARDS + '?card_id=eq.' + editingCardId, 'DELETE');
   var result = await sbFetch(SB_CARDS, 'POST', row);
-  if (!result) {
-    var rowNoTime = {card_id:row.card_id,title:row.title,note:row.note,photo:row.photo,updated_at:row.updated_at};
-    result = await sbFetch(SB_CARDS, 'POST', rowNoTime);
-  }
 
   // Mettre à jour le cache local
   cardEditsCache[editingCardId] = row;
@@ -822,7 +823,6 @@ async function saveCardEdit() {
 
   // Appliquer en live
   applyCardEdit(editingCardId, row);
-  // Re-trier la timeline si l'horaire a changé
   if (timeVal) {
     var card2 = document.getElementById(editingCardId);
     var tlItem2 = card2 ? card2.closest('.timeline-item') : null;
