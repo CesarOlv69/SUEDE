@@ -667,8 +667,7 @@ function sortTimeline(tl) {
   if (!tl) return;
   var items = Array.from(tl.querySelectorAll('.timeline-item'));
   items.sort(function(a, b) {
-    var ta = a.querySelector('.timeline-time');
-    var tb = b.querySelector('.timeline-time');
+    var ta = a.querySelector('.timeline-time'), tb = b.querySelector('.timeline-time');
     return timeToMin(ta ? ta.textContent.trim() : '') - timeToMin(tb ? tb.textContent.trim() : '');
   });
   items.forEach(function(item) { tl.appendChild(item); });
@@ -703,34 +702,19 @@ function applyCardEdit(cardId, data) {
   }
   if (data.note) {
     var n = card.querySelector('.event-desc') || card.querySelector('.event-note');
-    if (n) {
-      n.textContent = data.note;
-    } else {
+    if (n) { n.textContent = data.note; }
+    else {
       var t2 = card.querySelector('.event-title');
-      if (t2) {
-        var newN = document.createElement('div');
-        newN.className = 'event-note';
-        newN.textContent = data.note;
-        t2.insertAdjacentElement('afterend', newN);
-      }
+      if (t2) { var nn = document.createElement('div'); nn.className = 'event-note'; nn.textContent = data.note; t2.insertAdjacentElement('afterend', nn); }
     }
   }
   if (data.time) {
     var tlItem = card.closest('.timeline-item');
-    if (tlItem) {
-      var timeEl = tlItem.querySelector('.timeline-time');
-      if (timeEl) timeEl.textContent = data.time;
-    }
+    if (tlItem) { var te = tlItem.querySelector('.timeline-time'); if (te) te.textContent = data.time; }
   }
   if (data.photo) {
-    var photoEl = document.getElementById('ephoto-' + cardId);
-    if (photoEl) {
-      photoEl.style.backgroundImage = 'url(' + data.photo + ')';
-      photoEl.classList.add('has-photo');
-      var sv = photoEl.querySelector('svg'), sp = photoEl.querySelector('span');
-      if (sv) sv.style.display = 'none';
-      if (sp) sp.style.display = 'none';
-    }
+    var pe = document.getElementById('ephoto-' + cardId);
+    if (pe) { pe.style.backgroundImage = 'url(' + data.photo + ')'; pe.classList.add('has-photo'); var sv = pe.querySelector('svg'), sp = pe.querySelector('span'); if (sv) sv.style.display = 'none'; if (sp) sp.style.display = 'none'; }
   }
 }
 
@@ -757,13 +741,11 @@ function openCardEdit(cardId) {
 
   var status = document.getElementById('cedit-status');
   if (status) status.style.display = 'none';
-  // Lire horaire depuis timeline
   var tlItem = card ? card.closest('.timeline-item') : null;
   var timeEl = tlItem ? tlItem.querySelector('.timeline-time') : null;
-  var savedTime = (saved.time) || (timeEl ? timeEl.textContent.trim() : '');
+  var savedTime = (saved && saved.time) || (timeEl ? timeEl.textContent.trim() : '');
   var ceditTimeEl = document.getElementById('cedit-time');
   if (ceditTimeEl) ceditTimeEl.value = savedTime;
-
   var modal = document.getElementById('card-edit-modal');
   if (modal) { modal.style.display = 'flex'; modal.classList.add('open'); }
   document.body.style.overflow = 'hidden';
@@ -816,6 +798,10 @@ async function saveCardEdit() {
   // Upsert dans Supabase (delete + insert)
   await sbFetch(SB_CARDS + '?card_id=eq.' + editingCardId, 'DELETE');
   var result = await sbFetch(SB_CARDS, 'POST', row);
+  if (!result) {
+    var rowFallback = { card_id: row.card_id, title: row.title, note: row.note, photo: row.photo, updated_at: row.updated_at };
+    result = await sbFetch(SB_CARDS, 'POST', rowFallback);
+  }
 
   // Mettre à jour le cache local
   cardEditsCache[editingCardId] = row;
